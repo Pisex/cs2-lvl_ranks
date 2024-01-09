@@ -96,8 +96,7 @@ void ClientPrintAll(int hud_dest, const char *msg, ...)
 	V_vsnprintf(buf, sizeof(buf), msg, args);
 	va_end(args);
 	
-	if(hud_dest == 3) g_pUtils->PrintToChatAll("%s %s", g_vecPhrases[std::string("Prefix")].c_str(), buf);
-	else g_pUtils->PrintToChatAll(buf);
+	g_pUtils->PrintToChatAll("%s %s", g_vecPhrases[std::string("Prefix")].c_str(), buf);
 }
 
 void ClientPrint(int iSlot, int hud_dest, const char *msg, ...)
@@ -109,8 +108,7 @@ void ClientPrint(int iSlot, int hud_dest, const char *msg, ...)
 	V_vsnprintf(buf, sizeof(buf), msg, args);
 	va_end(args);
 	
-	if(hud_dest == 3) g_pUtils->PrintToChat(iSlot, "%s %s", g_vecPhrases[std::string("Prefix")].c_str(), buf);
-	else g_pUtils->PrintToChat(iSlot, buf);
+	g_pUtils->PrintToChat(iSlot, "%s %s", g_vecPhrases[std::string("Prefix")].c_str(), buf);
 }
 
 bool CheckStatus(int iSlot)
@@ -1311,8 +1309,7 @@ void LR::AllPluginsLoaded()
 		return;
 	}
 
-	std::string szLanguage = std::string(g_kvPhrases->GetString("language", "en"));
-	const char* g_pszLanguage = szLanguage.c_str();
+	const char* g_pszLanguage = g_pUtils->GetLanguage();
 	for (KeyValues *pKey = g_kvPhrases->GetFirstTrueSubKey(); pKey; pKey = pKey->GetNextTrueSubKey())
 		g_vecPhrases[std::string(pKey->GetName())] = std::string(pKey->GetString(g_pszLanguage));
 
@@ -1325,10 +1322,8 @@ void LR::AllPluginsLoaded()
 		return;
 	}
 
-	std::string szLanguage2 = std::string(g_kvPhrasesRanks->GetString("language", "en"));
-	const char* g_pszLanguage2 = szLanguage2.c_str();
 	for (KeyValues *pKey = g_kvPhrasesRanks->GetFirstTrueSubKey(); pKey; pKey = pKey->GetNextTrueSubKey())
-		g_vecPhrases[std::string(pKey->GetName())] = std::string(pKey->GetString(g_pszLanguage2));
+		g_vecPhrases[std::string(pKey->GetName())] = std::string(pKey->GetString(g_pszLanguage));
 
 	KeyValues* pKVConfig = new KeyValues("LR_Settings");
 	KeyValues::AutoDelete autoDelete(pKVConfig);
@@ -1485,6 +1480,10 @@ int LRApi::GetSettingsValue(LR_SettingType Setting)
 int LRApi::GetSettingsStatsValue(LR_SettingStatsType Setting)
 {
 	return g_SettingsStats[Setting];
+}
+
+IMySQLConnection* LRApi::GetDatabases() {
+	return g_pConnection;
 }
 
 std::vector<std::string> LRApi::GetRankNames() {

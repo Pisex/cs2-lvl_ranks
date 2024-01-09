@@ -265,6 +265,8 @@ public:
 			}
 		}
 	}
+
+	IMySQLConnection* GetDatabases();
 private:
 	bool bActive = false;
 

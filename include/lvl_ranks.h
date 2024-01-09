@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include "mysql_mm.h"
 
 #define LR_INTERFACE "ILRApi"
 
@@ -131,4 +132,6 @@ public:
     virtual void RoundWithoutValue() = 0;
     virtual bool ChangeClientValue(int iSlot, int iGiveExp) = 0;
     virtual void ResetPlayerStats(int iSlot) = 0;
+
+	virtual IMySQLConnection* GetDatabases() = 0;
 };
