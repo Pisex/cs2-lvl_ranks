@@ -180,8 +180,8 @@
 	"MyStatsInfoAssists"
 	{
 		"en"		"Assists: %i"
-		"ru"		"Смертей: %i"
-		"ua"		"Смертей: %i"
+		"ru"		"Ассистов: %i"
+		"ua"		"Сприянь: %i"
 		"chi"		"助攻: %i"
 		"es"		"Asistencias: %i"
 		"de"		"Assists: %i"

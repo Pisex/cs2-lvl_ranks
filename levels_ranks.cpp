@@ -99,7 +99,7 @@ void ClientPrintAll(int hud_dest, const char *msg, ...)
 	g_pUtils->PrintToChatAll("%s %s", g_vecPhrases[std::string("Prefix")].c_str(), buf);
 }
 
-void ClientPrint(int iSlot, int hud_dest, const char *msg, ...)
+void ClientPrint(int iSlot, const char *msg, ...)
 {
 	va_list args;
 	va_start(args, msg);
@@ -232,7 +232,7 @@ void CheckRank(int iSlot, bool bActive = true)
 
 					g_SMAPI->Format(sRankName, sizeof(sRankName), "%s", g_vecPhrases[g_hRankNames[iRank ? iRank - 1 : iRank]].c_str());
 
-					ClientPrint(iSlot, 3, g_vecPhrases[std::string(bIsUp ? "LevelUp" : "LevelDown")].c_str(), sRankName);
+					ClientPrint(iSlot, g_vecPhrases[std::string(bIsUp ? "LevelUp" : "LevelDown")].c_str(), sRankName);
 
 					if(g_Settings[LR_ShowLevelUpMessage + !bIsUp])
 					{
@@ -240,7 +240,7 @@ void CheckRank(int iSlot, bool bActive = true)
 						{
 							if(g_iPlayerInfo[i].bInitialized && i != iSlot)
 							{
-								ClientPrint(i, 3, g_vecPhrases[std::string(bIsUp ? "LevelUpAll" : "LevelDownAll")].c_str(), engine->GetClientConVarValue(iSlot, "name"), sRankName);
+								ClientPrint(i, g_vecPhrases[std::string(bIsUp ? "LevelUpAll" : "LevelDownAll")].c_str(), engine->GetClientConVarValue(iSlot, "name"), sRankName);
 							}
 						}
 					}
@@ -290,7 +290,7 @@ bool NotifClient(int iSlot, int iValue, const char* sTitlePhrase, bool bAllow = 
 			{
 				char sValue[64];
 				g_SMAPI->Format(sValue, sizeof(sValue), "%s%i", iValue>0?"+":"", iValue);
-				ClientPrint(iSlot, 3, g_vecPhrases[std::string(sTitlePhrase)].c_str(), g_iPlayerInfo[iSlot].iStats[ST_EXP], sValue);
+				ClientPrint(iSlot, g_vecPhrases[std::string(sTitlePhrase)].c_str(), g_iPlayerInfo[iSlot].iStats[ST_EXP], sValue);
 			}
 		}
 
@@ -364,7 +364,7 @@ void OverAllTopPlayers(int iSlot, bool bPlaytime = true)
 			}
 			else
 			{
-				ClientPrint(iSlot, 3, g_vecPhrases[std::string("NoData")].c_str());
+				ClientPrint(iSlot, g_vecPhrases[std::string("NoData")].c_str());
 			}
 		});
 	}
@@ -1014,10 +1014,10 @@ void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 				{
 					if(bWarningMessage)
 					{
-						ClientPrint(i, 3, g_vecPhrases[std::string("RoundStartCheckCount")].c_str(), iPlayers, g_Settings[LR_MinplayersCount]);
+						ClientPrint(i, g_vecPhrases[std::string("RoundStartCheckCount")].c_str(), iPlayers, g_Settings[LR_MinplayersCount]);
 					}
 
-					ClientPrint(i, 3, g_vecPhrases[std::string("RoundStartMessageRanks")].c_str());
+					ClientPrint(i, g_vecPhrases[std::string("RoundStartMessageRanks")].c_str());
 				}
 			}
 		}
@@ -1054,14 +1054,14 @@ void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 					{
 						if(g_iPlayerInfo[i].iRoundExp)
 						{
-							ClientPrint(i, 3, g_vecPhrases[std::string(g_iPlayerInfo[i].iRoundExp > 0 ? "RoundExpResultGive" : "RoundExpResultTake")].c_str(), g_iPlayerInfo[i].iRoundExp);
+							ClientPrint(i, g_vecPhrases[std::string(g_iPlayerInfo[i].iRoundExp > 0 ? "RoundExpResultGive" : "RoundExpResultTake")].c_str(), g_iPlayerInfo[i].iRoundExp);
 						}
 						else 
 						{
-							ClientPrint(i, 3, g_vecPhrases[std::string("RoundExpResultNothing")].c_str());
+							ClientPrint(i, g_vecPhrases[std::string("RoundExpResultNothing")].c_str());
 						}
 
-						ClientPrint(i, 3, g_vecPhrases[std::string("RoundExpResultAll")].c_str(), g_iPlayerInfo[i].iStats[ST_EXP]);
+						ClientPrint(i, g_vecPhrases[std::string("RoundExpResultAll")].c_str(), g_iPlayerInfo[i].iStats[ST_EXP]);
 
 						g_iPlayerInfo[i].iRoundExp = 0;
 					}
@@ -1230,13 +1230,13 @@ void StartupServer()
 				{
 					if(CheckStatus(i)) 
 					{
-						ClientPrint(iSlot, 3, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), iPlaceInTop, g_iDBCountPlayers, iExp, iKills, iDeaths, fKDR);
+						ClientPrint(i, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), iPlaceInTop, g_iDBCountPlayers, iExp, iKills, iDeaths, fKDR);
 					}
 				}
 			}
 			else
 			{
-				ClientPrint(iSlot, 3, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP], g_iDBCountPlayers, g_iPlayerInfo[iSlot].iStats[ST_EXP], iKills, iDeaths, fKDR);
+				ClientPrint(iSlot, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP], g_iDBCountPlayers, g_iPlayerInfo[iSlot].iStats[ST_EXP], iKills, iDeaths, fKDR);
 			}
 			return false;
 		});
@@ -1246,12 +1246,12 @@ void StartupServer()
 		});
 
 		g_pUtils->RegCommand(g_PLID, {"mm_toptime", "sm_toptime", "toptime"}, {"!toptime", "toptime", "!ещзешьу", "ещзешьу"}, [](int iSlot, const char* szContent){
-			OverAllTopPlayers(iSlot, false);
+			OverAllTopPlayers(iSlot);
 			return false;
 		});
 
 		g_pUtils->RegCommand(g_PLID, {"mm_top", "sm_top", "top"}, {"!top", "top", "!ещз", "ещз"}, [](int iSlot, const char* szContent){
-			OverAllTopPlayers(iSlot);
+			OverAllTopPlayers(iSlot, false);
 			return false;
 		});
 
