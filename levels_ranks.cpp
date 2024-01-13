@@ -157,7 +157,7 @@ void SaveDataPlayer(int iSlot, bool bDisconnect = false)
 	`playtime`, \
 	`lastconnect` \
 ) \
-VALUES ('%s', %i, '%s', %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i);", g_sTableName, g_iPlayerInfo[iSlot].szAuth.c_str(), g_iPlayerInfo[iSlot].iStats[ST_EXP], engine->GetClientConVarValue(iSlot, "name"), g_iPlayerInfo[iSlot].iStats[ST_RANK], g_iPlayerInfo[iSlot].iStats[ST_KILLS], g_iPlayerInfo[iSlot].iStats[ST_DEATHS], g_iPlayerInfo[iSlot].iStats[ST_SHOOTS], g_iPlayerInfo[iSlot].iStats[ST_HITS], g_iPlayerInfo[iSlot].iStats[ST_HEADSHOTS], g_iPlayerInfo[iSlot].iStats[ST_ASSISTS], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSWIN], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSLOSE], g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] + iTime, g_iPlayerInfo[iSlot].iSessionStats[ST_PLAYTIME] == -1 ? 0 : iTime);
+VALUES ('%s', %i, '%s', %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i);", g_sTableName, g_iPlayerInfo[iSlot].szAuth.c_str(), g_iPlayerInfo[iSlot].iStats[ST_EXP], g_pConnection->Escape(engine->GetClientConVarValue(iSlot, "name")).c_str(), g_iPlayerInfo[iSlot].iStats[ST_RANK], g_iPlayerInfo[iSlot].iStats[ST_KILLS], g_iPlayerInfo[iSlot].iStats[ST_DEATHS], g_iPlayerInfo[iSlot].iStats[ST_SHOOTS], g_iPlayerInfo[iSlot].iStats[ST_HITS], g_iPlayerInfo[iSlot].iStats[ST_HEADSHOTS], g_iPlayerInfo[iSlot].iStats[ST_ASSISTS], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSWIN], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSLOSE], g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] + iTime, g_iPlayerInfo[iSlot].iSessionStats[ST_PLAYTIME] == -1 ? 0 : iTime);
 
 		g_pConnection->Query(szQuery, [](IMySQLQuery* test){});
 
@@ -1510,7 +1510,7 @@ const char* LR::GetLicense()
 
 const char* LR::GetVersion()
 {
-	return "1.0";
+	return "1.0.1";
 }
 
 const char* LR::GetDate()
