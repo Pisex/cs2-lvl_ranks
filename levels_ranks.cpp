@@ -1185,7 +1185,6 @@ void OnBombEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 	}
 }
 
-
 CGameEntitySystem* GameEntitySystem()
 {
     return g_pUtils->GetCGameEntitySystem();
@@ -1194,8 +1193,8 @@ CGameEntitySystem* GameEntitySystem()
 void StartupServer()
 {
 
-	g_pGameEntitySystem = GameEntitySystem();
 	g_pEntitySystem = GameEntitySystem();
+	
 
 	static bool bDone = false;
 	if (!bDone)
