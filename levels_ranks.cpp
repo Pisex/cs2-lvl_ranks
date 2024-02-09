@@ -1188,14 +1188,13 @@ void OnBombEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 
 CGameEntitySystem* GameEntitySystem()
 {
-	g_pGameEntitySystem = *reinterpret_cast<CGameEntitySystem**>(reinterpret_cast<uintptr_t>(g_pGameResourceService) + WIN_LINUX(0x58, 0x50));
-	return g_pGameEntitySystem;
-}
-
+    return g_pUtils->GetCGameEntitySystem();
+};
 
 void StartupServer()
 {
 
+	g_pGameEntitySystem = GameEntitySystem();
 	g_pEntitySystem = GameEntitySystem();
 
 	static bool bDone = false;
