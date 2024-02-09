@@ -83,6 +83,12 @@ std::string ConvertSteamID(const char* usteamid) {
     return result;
 }
 
+CGameEntitySystem* GameEntitySystem()
+{
+	return g_pUtils->GetCGameEntitySystem();
+};
+
+
 void OnLRMenu(int iSlot);
 void MenuTops(int iSlot);
 void MyStats(int iSlot);
@@ -1185,15 +1191,11 @@ void OnBombEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 	}
 }
 
-CGameEntitySystem* GameEntitySystem()
-{
-    return g_pUtils->GetCGameEntitySystem();
-};
-
 void StartupServer()
 {
 
-	g_pEntitySystem = GameEntitySystem();
+	g_pGameEntitySystem = GameEntitySystem();
+	g_pEntitySystem = g_pUtils->GetCEntitySystem();
 	
 
 	static bool bDone = false;
