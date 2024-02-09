@@ -49,7 +49,7 @@ LRApi* g_pLRApi = nullptr;
 ILRApi* g_pLRCore = nullptr;
 
 SH_DECL_HOOK4_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, CPlayerSlot, char const *, int, uint64);
-SH_DECL_HOOK5_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, CPlayerSlot, int, const char *, uint64, const char *);
+SH_DECL_HOOK5_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, CPlayerSlot, ENetworkDisconnectionReason, const char *, uint64, const char *);
 
 std::string ConvertSteamID(const char* usteamid) {
     std::string steamid(usteamid);
@@ -843,7 +843,7 @@ bool LR::Unload(char *error, size_t maxlen)
 	return true;
 }
 
-void LR::OnClientDisconnect(CPlayerSlot slot, int reason, const char *pszName, uint64 xuid, const char *pszNetworkID)
+void LR::OnClientDisconnect( CPlayerSlot slot, ENetworkDisconnectionReason reason, const char *pszName, uint64 xuid, const char *pszNetworkID )
 {
 	SaveDataPlayer(slot.Get(), true);
 }
@@ -1185,9 +1185,15 @@ void OnBombEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 	}
 }
 
+
+CGameEntitySystem* GameEntitySystem()
+{
+    return g_pUtils->GetCGameEntitySystem();
+};
+
 void StartupServer()
 {
-	g_pGameEntitySystem = g_pUtils->GetCGameEntitySystem();
+	g_pGameEntitySystem = GameEntitySystem();
 	g_pEntitySystem = g_pUtils->GetCEntitySystem();
 
 	static bool bDone = false;

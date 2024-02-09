@@ -109,7 +109,7 @@ private:
 
 private: // Hooks
 	void OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, uint64 xuid);
-	void OnClientDisconnect(CPlayerSlot slot, int reason, const char *pszName, uint64 xuid, const char *pszNetworkID);
+	void OnClientDisconnect( CPlayerSlot slot, ENetworkDisconnectionReason reason, const char *pszName, uint64 xuid, const char *pszNetworkID );
 };
 
 class LRApi : public ILRApi {
