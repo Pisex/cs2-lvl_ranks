@@ -136,7 +136,7 @@ void ResetPlayerData(int iSlot)
 	}
 	g_iPlayerInfo[iSlot].iKillStreak = 0;
 	
-	g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] = g_iPlayerInfo[iSlot].iSessionStats[ST_PLAYTIME] -= std::time(0);
+	g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] = std::time(0);
 	g_iPlayerInfo[iSlot].iStats[ST_EXP] = 0;
 }
 
@@ -163,7 +163,7 @@ void SaveDataPlayer(int iSlot, bool bDisconnect = false)
 	`playtime`, \
 	`lastconnect` \
 ) \
-VALUES ('%s', %i, '%s', %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i);", g_sTableName, g_iPlayerInfo[iSlot].szAuth.c_str(), g_iPlayerInfo[iSlot].iStats[ST_EXP], g_pConnection->Escape(engine->GetClientConVarValue(iSlot, "name")).c_str(), g_iPlayerInfo[iSlot].iStats[ST_RANK], g_iPlayerInfo[iSlot].iStats[ST_KILLS], g_iPlayerInfo[iSlot].iStats[ST_DEATHS], g_iPlayerInfo[iSlot].iStats[ST_SHOOTS], g_iPlayerInfo[iSlot].iStats[ST_HITS], g_iPlayerInfo[iSlot].iStats[ST_HEADSHOTS], g_iPlayerInfo[iSlot].iStats[ST_ASSISTS], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSWIN], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSLOSE], g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] + iTime, g_iPlayerInfo[iSlot].iSessionStats[ST_PLAYTIME] == -1 ? 0 : iTime);
+VALUES ('%s', %i, '%s', %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i);", g_sTableName, g_iPlayerInfo[iSlot].szAuth.c_str(), g_iPlayerInfo[iSlot].iStats[ST_EXP], g_pConnection->Escape(engine->GetClientConVarValue(iSlot, "name")).c_str(), g_iPlayerInfo[iSlot].iStats[ST_RANK], g_iPlayerInfo[iSlot].iStats[ST_KILLS], g_iPlayerInfo[iSlot].iStats[ST_DEATHS], g_iPlayerInfo[iSlot].iStats[ST_SHOOTS], g_iPlayerInfo[iSlot].iStats[ST_HITS], g_iPlayerInfo[iSlot].iStats[ST_HEADSHOTS], g_iPlayerInfo[iSlot].iStats[ST_ASSISTS], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSWIN], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSLOSE], iTime-g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME], iTime);
 
 		g_pConnection->Query(szQuery, [](IMySQLQuery* test){});
 
@@ -180,7 +180,7 @@ VALUES ('%s', %i, '%s', %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i);", g_sTableN
 (\
 	SELECT COUNT(`steam`) FROM `%s` WHERE `playtime` >= %d AND `lastconnect`\
 ) AS `timepos` \
-LIMIT 1;", g_sTableName, g_iPlayerInfo[iSlot].iStats[ST_EXP], g_sTableName, g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] + iTime);
+LIMIT 1;", g_sTableName, g_iPlayerInfo[iSlot].iStats[ST_EXP], g_sTableName, iTime-g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME]);
 			g_pConnection->Query(szQuery, [iSlot](IMySQLQuery* test)
 			{
 				auto results = test->GetResultSet();
@@ -583,7 +583,7 @@ void MyStatsSession(int iSlot)
 {
 	int iRoundsWin = g_iPlayerInfo[iSlot].iSessionStats[ST_ROUNDSWIN],
 		iRoundsAll = iRoundsWin + g_iPlayerInfo[iSlot].iSessionStats[ST_ROUNDSLOSE],
-		iPlayTime = g_iPlayerInfo[iSlot].iSessionStats[ST_PLAYTIME] + std::time(0),
+		iPlayTime = std::time(0) - g_iPlayerInfo[iSlot].iSessionStats[ST_PLAYTIME],
 		iKills = g_iPlayerInfo[iSlot].iSessionStats[ST_KILLS],
 		iDeaths = g_iPlayerInfo[iSlot].iSessionStats[ST_DEATHS],
 		iHeadshots = g_iPlayerInfo[iSlot].iSessionStats[ST_HEADSHOTS],
@@ -652,7 +652,7 @@ void MyStats(int iSlot)
 {
 	int iRoundsWin = g_iPlayerInfo[iSlot].iStats[ST_ROUNDSWIN],
 	    iRoundsAll = iRoundsWin + g_iPlayerInfo[iSlot].iStats[ST_ROUNDSLOSE],
-	    iPlayTime = g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] + std::time(0),
+	    iPlayTime = std::time(0) - g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME],
 	    iKills = g_iPlayerInfo[iSlot].iStats[ST_KILLS],
 	    iDeaths = g_iPlayerInfo[iSlot].iStats[ST_DEATHS],
 	    iHeadshots = g_iPlayerInfo[iSlot].iStats[ST_HEADSHOTS],
@@ -878,7 +878,8 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 				g_iPlayerInfo[slot.Get()].iStats[i] = results->GetInt(i);
 			}
 
-			g_iPlayerInfo[slot.Get()].iStats[ST_PLAYTIME] += g_iPlayerInfo[slot.Get()].iSessionStats[ST_PLAYTIME] -= std::time(0);
+			g_iPlayerInfo[slot.Get()].iSessionStats[ST_PLAYTIME] = std::time(0);
+			g_iPlayerInfo[slot.Get()].iStats[ST_PLAYTIME] = std::time(0) - g_iPlayerInfo[slot.Get()].iStats[ST_PLAYTIME];
 			g_iPlayerInfo[slot.Get()].bInitialized = true;
 			
 			g_pLRApi->SendOnPlayerLoadedHook(slot.Get(), g_iPlayerInfo[slot.Get()].szAuth.c_str());
@@ -1001,7 +1002,7 @@ void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 		for (int i = 0; i < 64; i++)
 		{
 			CCSPlayerController* pPlayerController = static_cast<CCSPlayerController*>(g_pEntitySystem->GetBaseEntity(static_cast<CEntityIndex>(i + 1)));
-			if (pPlayerController && pPlayerController->m_steamID() > 0 && pPlayerController->m_iTeamNum() > 1)
+			if (pPlayerController && pPlayerController->m_steamID() > 0 && pPlayerController->m_iTeamNum() > 1 && pPlayerController->m_hPawn() && pPlayerController->m_hPlayerPawn())
 			{
 				iPlayers++;
 			}
@@ -1467,7 +1468,7 @@ void LRApi::RoundWithoutValue()
 int LRApi::GetClientInfo(int iSlot, LR_StatsType StatsType, bool bSession)
 {
 	int iType = StatsType;
-	return (bSession ? g_iPlayerInfo[iSlot].iSessionStats[iType] : g_iPlayerInfo[iSlot].iStats[iType]) + (iType == ST_PLAYTIME ? std::time(0) : 0);
+	return (bSession ? g_iPlayerInfo[iSlot].iSessionStats[iType] : g_iPlayerInfo[iSlot].iStats[iType]) + (iType == ST_PLAYTIME ? std::time(0)-g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] : 0);
 }
 
 bool LRApi::CheckCountPlayers()
@@ -1518,7 +1519,7 @@ const char* LR::GetLicense()
 
 const char* LR::GetVersion()
 {
-	return "1.0.1";
+	return "1.0.2";
 }
 
 const char* LR::GetDate()
