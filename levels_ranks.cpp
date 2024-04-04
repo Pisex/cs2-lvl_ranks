@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include "levels_ranks.h"
 #include "metamod_oslink.h"
+#include "schemasystem/schemasystem.h"
 
 LR g_LR;
 PLUGIN_EXPOSE(LR, g_LR);
 IVEngineServer2* engine = nullptr;
-IGameResourceServiceServer* g_pGameResourceService = nullptr;
 CGameEntitySystem* g_pGameEntitySystem = nullptr;
 CEntitySystem* g_pEntitySystem = nullptr;
-CSchemaSystem* g_pCSchemaSystem = nullptr;
 CCSGameRules* g_pGameRules = nullptr;
 
 //////////////////////////////////////////////////
@@ -376,92 +375,6 @@ void OverAllTopPlayers(int iSlot, bool bPlaytime = true)
 	}
 }
 
-void CreateDatabases()
-{
-	char error[64] = { 0 };
-	KeyValues* pKVConfig = new KeyValues("Databases");
-
-	if (!pKVConfig->LoadFromFile(g_pFullFileSystem, "addons/configs/databases.cfg")) {
-		V_strncpy(error, "Failed to load databases config 'addons/config/databases.cfg'", sizeof(error));
-		ConColorMsg(Color(255, 0, 0, 255), "[LR] %s\n", error);
-		return;
-	}
-
-	pKVConfig = pKVConfig->FindKey("levels_ranks", false);
-	if (!pKVConfig) {
-		g_SMAPI->Format(error, sizeof(error), "No databases.cfg 'levels_ranks'");
-		ConColorMsg(Color(255, 0, 0, 255), "[LR] %s\n", error);
-		return;
-	}
-
-	MySQLConnectionInfo info {
-		pKVConfig->GetString("host", nullptr),
-		pKVConfig->GetString("user", nullptr),
-		pKVConfig->GetString("pass", nullptr),
-		pKVConfig->GetString("database", nullptr),
-		pKVConfig->GetInt("port", 3306)
-	};
-
-	g_pConnection = g_pMysqlClient->CreateMySQLConnection(info);
-
-	g_pConnection->Connect([](bool connect) {
-		if (!connect) {
-			META_CONPRINT("Failed to connect the mysql database\n");
-		} else {
-			char szQuery[1024];
-			g_SMAPI->Format(szQuery, sizeof(szQuery), "CREATE TABLE IF NOT EXISTS `%s` \
-(\
-`steam` varchar(22) COLLATE 'utf8_unicode_ci' PRIMARY KEY, \
-`name` varchar(32)%s, \
-`value` int NOT NULL DEFAULT 0, \
-`rank` int NOT NULL DEFAULT 0, \
-`kills` int NOT NULL DEFAULT 0, \
-`deaths` int NOT NULL DEFAULT 0, \
-`shoots` int NOT NULL DEFAULT 0, \
-`hits` int NOT NULL DEFAULT 0, \
-`headshots` int NOT NULL DEFAULT 0, \
-`assists` int NOT NULL DEFAULT 0, \
-`round_win` int NOT NULL DEFAULT 0, \
-`round_lose` int NOT NULL DEFAULT 0, \
-`playtime` int NOT NULL DEFAULT 0, \
-`lastconnect` int NOT NULL DEFAULT 0\
-);", g_sTableName, g_Settings[LR_DB_Allow_UTF8MB4] ? " COLLATE 'utf8mb4_unicode_ci'" : " COLLATE 'utf8_unicode_ci'");
-			g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
-
-			g_SMAPI->Format(szQuery, sizeof(szQuery), "SELECT COUNT(`steam`) FROM `%s` WHERE `lastconnect` LIMIT 1;", g_sTableName);
-			g_pConnection->Query(szQuery, [](IMySQLQuery* test) {
-				auto results = test->GetResultSet();
-				if(results->FetchRow())
-				{
-					g_iDBCountPlayers = results->GetInt(0);
-				}
-
-				char sCharset[8], 
-		        	sCharsetType[16],
-					szQuery[256];
-
-				g_SMAPI->Format(sCharset, sizeof(sCharset), "%s", g_Settings[LR_DB_Allow_UTF8MB4] ? "utf8mb4" : "utf8");
-				g_SMAPI->Format(sCharsetType, sizeof(sCharsetType), "%s", g_Settings[LR_DB_Charset_Type] ? "_unicode_ci" : "_general_ci");
-
-				g_SMAPI->Format(szQuery, sizeof(szQuery), "SET NAMES '%s';", sCharset);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
-
-				g_SMAPI->Format(szQuery, sizeof(szQuery), "SET CHARSET '%s';", sCharset);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
-
-				g_SMAPI->Format(szQuery, sizeof(szQuery), "ALTER TABLE `%s` CHARACTER SET '%s' COLLATE '%s%s';", g_sTableName, sCharset, sCharset, sCharsetType);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
-
-				g_SMAPI->Format(szQuery, sizeof(szQuery), "ALTER TABLE `%s` MODIFY COLUMN `name` varchar(%i) CHARACTER SET '%s' COLLATE '%s%s' NOT NULL default '' AFTER `steam`;", g_sTableName, 128, sCharset, sCharset, sCharsetType);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
-
-				g_pLRApi->SetActive(true);
-				g_pLRApi->SendCoreIsReady();
-			});
-		}
-	});
-}
-
 void OverAllRanksHandle(const char* szBack, const char* szFront, int iItem, int iSlot)
 {
 	if(iItem == 7)
@@ -820,13 +733,13 @@ bool LR::Load(PluginId id, ISmmAPI* ismm, char* error, size_t maxlen, bool late)
 	PLUGIN_SAVEVARS();
 
 	GET_V_IFACE_CURRENT(GetEngineFactory, g_pCVar, ICvar, CVAR_INTERFACE_VERSION);
-	GET_V_IFACE_ANY(GetEngineFactory, g_pCSchemaSystem, CSchemaSystem, SCHEMASYSTEM_INTERFACE_VERSION);
+	GET_V_IFACE_ANY(GetEngineFactory, g_pSchemaSystem, ISchemaSystem, SCHEMASYSTEM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetFileSystemFactory, g_pFullFileSystem, IFileSystem, FILESYSTEM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer2, SOURCE2ENGINETOSERVER_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetServerFactory, g_pSource2Server, ISource2Server, SOURCE2SERVER_INTERFACE_VERSION);
 	GET_V_IFACE_ANY(GetServerFactory, g_pSource2GameClients, IServerGameClients, SOURCE2GAMECLIENTS_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, g_pNetworkServerService, INetworkServerService, NETWORKSERVERSERVICE_INTERFACE_VERSION);
-	GET_V_IFACE_CURRENT(GetEngineFactory, g_pGameResourceService, IGameResourceServiceServer, GAMERESOURCESERVICESERVER_INTERFACE_VERSION);
+	GET_V_IFACE_CURRENT(GetEngineFactory, g_pGameResourceServiceServer, IGameResourceService, GAMERESOURCESERVICESERVER_INTERFACE_VERSION);
 	
 	g_SMAPI->AddListener( this, this );
 
@@ -1309,124 +1222,205 @@ void LR::AllPluginsLoaded()
 	g_pUtils->StartupServer(g_PLID, StartupServer);
 	g_pUtils->OnGetGameRules(g_PLID, GetGameRules);
 
-	KeyValues::AutoDelete g_kvPhrases("Phrases");
-	const char *pszPath = "addons/translations/lr_core.phrases.txt";
-
-	if (!g_kvPhrases->LoadFromFile(g_pFullFileSystem, pszPath))
 	{
-		Warning("Failed to load %s\n", pszPath);
-		return;
-	}
+		KeyValues::AutoDelete g_kvPhrases("Phrases");
+		const char *pszPath = "addons/translations/lr_core.phrases.txt";
 
-	const char* g_pszLanguage = g_pUtils->GetLanguage();
-	for (KeyValues *pKey = g_kvPhrases->GetFirstTrueSubKey(); pKey; pKey = pKey->GetNextTrueSubKey())
-		g_vecPhrases[std::string(pKey->GetName())] = std::string(pKey->GetString(g_pszLanguage));
-
-	KeyValues::AutoDelete g_kvPhrasesRanks("Phrases");
-	const char *pszPath2 = "addons/translations/lr_core_ranks.phrases.txt";
-
-	if (!g_kvPhrasesRanks->LoadFromFile(g_pFullFileSystem, pszPath2))
-	{
-		Warning("Failed to load %s\n", pszPath2);
-		return;
-	}
-
-	for (KeyValues *pKey = g_kvPhrasesRanks->GetFirstTrueSubKey(); pKey; pKey = pKey->GetNextTrueSubKey())
-		g_vecPhrases[std::string(pKey->GetName())] = std::string(pKey->GetString(g_pszLanguage));
-
-	KeyValues* pKVConfig = new KeyValues("LR_Settings");
-	KeyValues::AutoDelete autoDelete(pKVConfig);
-
-	if (!pKVConfig->LoadFromFile(g_pFullFileSystem, "addons/configs/levels_ranks/settings.ini")) {
-		V_strncpy(error, "Failed to load levels ranks config 'addons/config/levels_ranks/settings.ini'", sizeof(error));
-		return;
-	}
-	
-	KeyValues* pKVConfigMain = pKVConfig->FindKey("MainSettings", false);
-	{
-		g_SMAPI->Format(g_sTableName, sizeof(g_sTableName), pKVConfigMain->GetString("lr_table", "lvl_base"));
-		g_SMAPI->Format(g_sPluginTitle, sizeof(g_sPluginTitle), pKVConfigMain->GetString("lr_plugin_title"));
-
-		g_Settings[LR_DB_Allow_UTF8MB4] = pKVConfigMain->GetInt("lr_db_allow_utf8mb4", 1);
-
-		// pKVConfig->GetString("lr_flag_adminmenu", "z");
-		// g_Settings[LR_FlagAdminmenu] = ReadFlagString(sBuffer);
-
-		g_Settings[LR_MinplayersCount] = pKVConfigMain->GetInt("lr_minplayers_count", 4);
-		g_Settings[LR_ShowResetMyStats] = pKVConfigMain->GetInt("lr_show_resetmystats", 1);
-
-		// if((g_Settings[LR_ResetMyStatsCooldown] = pKVConfig->GetInt("lr_resetmystats_cooldown", 86400)))
-		// {
-		// 	if(g_hLastResetMyStats)
-		// 	{
-		// 		g_hLastResetMyStats.Close();
-		// 	}
-
-		// 	g_hLastResetMyStats = new Cookie("LR_LastResetMyStats", NULL_STRING, CookieAccess_Private);
-		// }
-
-		g_Settings[LR_ShowUsualMessage] = pKVConfigMain->GetInt("lr_show_usualmessage", 1);
-		g_Settings[LR_ShowSpawnMessage] = pKVConfigMain->GetInt("lr_show_spawnmessage", 1);
-		g_Settings[LR_ShowLevelUpMessage] = pKVConfigMain->GetInt("lr_show_levelup_message", 0);
-		g_Settings[LR_ShowLevelDownMessage] = pKVConfigMain->GetInt("lr_show_leveldown_message", 0);
-		g_Settings[LR_ShowRankMessage] = pKVConfigMain->GetInt("lr_show_rankmessage", 1);
-		g_Settings[LR_ShowRankList] = pKVConfigMain->GetInt("lr_show_ranklist", 1);
-		g_Settings[LR_GiveExpRoundEnd] = pKVConfigMain->GetInt("lr_giveexp_roundend", 1);
-		g_Settings[LR_BlockWarmup] = pKVConfigMain->GetInt("lr_block_warmup", 1);
-		g_Settings[LR_AllAgainstAll] = pKVConfigMain->GetInt("lr_allagainst_all", 0);
-		g_Settings[LR_CleanDB_Days] = pKVConfigMain->GetInt("lr_cleandb_days", 30);
-		g_Settings[LR_CleanDB_BanClient] = pKVConfigMain->GetInt("lr_cleandb_banclient", 1);
-		g_Settings[LR_DB_SaveDataPlayer_Mode] = pKVConfigMain->GetInt("lr_db_savedataplayer_mode", 1);
-		g_Settings[LR_DB_Charset_Type] = pKVConfigMain->GetInt("lr_db_character_type", 0);
-		g_Settings[LR_TopCount] = pKVConfigMain->GetInt("lr_top_count", 0);
-	}
-
-	
-	pKVConfigMain = pKVConfig->FindKey("Points", false);
-	{
-
-		g_SettingsStats[LR_ExpKill] = pKVConfigMain->GetInt("lr_kill");
-		g_SettingsStats[LR_ExpKillIsBot] = pKVConfigMain->GetInt("lr_kill_is_bot");
-		g_SettingsStats[LR_ExpDeath] = pKVConfigMain->GetInt("lr_death");
-		g_SettingsStats[LR_ExpDeathIsBot] = pKVConfigMain->GetInt("lr_death_is_bot");
-		g_SettingsStats[LR_ExpGiveHeadShot] = pKVConfigMain->GetInt("lr_headshot", 1);
-		g_SettingsStats[LR_ExpGiveAssist] = pKVConfigMain->GetInt("lr_assist", 1);
-		g_SettingsStats[LR_ExpGiveSuicide] = pKVConfigMain->GetInt("lr_suicide", 0);
-		g_SettingsStats[LR_ExpGiveTeamKill] = pKVConfigMain->GetInt("lr_teamkill", 0);
-		g_SettingsStats[LR_ExpRoundWin] = pKVConfigMain->GetInt("lr_winround", 2);
-		g_SettingsStats[LR_ExpRoundLose] = pKVConfigMain->GetInt("lr_loseround", 2);
-		g_SettingsStats[LR_ExpRoundMVP] = pKVConfigMain->GetInt("lr_mvpround", 1);
-		g_SettingsStats[LR_ExpBombPlanted] = pKVConfigMain->GetInt("lr_bombplanted", 2);
-		g_SettingsStats[LR_ExpBombDefused] = pKVConfigMain->GetInt("lr_bombdefused", 2);
-		g_SettingsStats[LR_ExpBombDropped] = pKVConfigMain->GetInt("lr_bombdropped", 1);
-		g_SettingsStats[LR_ExpBombPickup] = pKVConfigMain->GetInt("lr_bombpickup", 1);
-		g_SettingsStats[LR_ExpHostageKilled] = pKVConfigMain->GetInt("lr_hostagekilled", 0);
-		g_SettingsStats[LR_ExpHostageRescued] = pKVConfigMain->GetInt("lr_hostagerescued", 2);
-	}
-
-	pKVConfigMain = pKVConfig->FindKey("Points_Bonuses", false);
-	{
-		char sBuffer[64];
-		for(int i = 0; i != 10;)
+		if (!g_kvPhrases->LoadFromFile(g_pFullFileSystem, pszPath))
 		{
-			g_SMAPI->Format(sBuffer, sizeof(sBuffer), "lr_bonus_%i", i + 1);
-			g_iBonus[i++] = pKVConfigMain->GetInt(sBuffer, 0);
+			Warning("Failed to load %s\n", pszPath);
+			return;
 		}
+
+		const char* g_pszLanguage = g_pUtils->GetLanguage();
+		for (KeyValues *pKey = g_kvPhrases->GetFirstTrueSubKey(); pKey; pKey = pKey->GetNextTrueSubKey())
+			g_vecPhrases[std::string(pKey->GetName())] = std::string(pKey->GetString(g_pszLanguage));
+
+		KeyValues::AutoDelete g_kvPhrasesRanks("Phrases");
+		const char *pszPath2 = "addons/translations/lr_core_ranks.phrases.txt";
+
+		if (!g_kvPhrasesRanks->LoadFromFile(g_pFullFileSystem, pszPath2))
+		{
+			Warning("Failed to load %s\n", pszPath2);
+			return;
+		}
+
+		for (KeyValues *pKey = g_kvPhrasesRanks->GetFirstTrueSubKey(); pKey; pKey = pKey->GetNextTrueSubKey())
+			g_vecPhrases[std::string(pKey->GetName())] = std::string(pKey->GetString(g_pszLanguage));
 	}
 
-	pKVConfigMain = pKVConfig->FindKey("Ranks", false);
 	{
-		g_hRankNames.clear();
-		g_hRankExp.clear();
+		KeyValues* pKVConfig = new KeyValues("LR_Settings");
+		KeyValues::AutoDelete autoDelete(pKVConfig);
+
+		if (!pKVConfig->LoadFromFile(g_pFullFileSystem, "addons/configs/levels_ranks/settings.ini")) {
+			V_strncpy(error, "Failed to load levels ranks config 'addons/config/levels_ranks/settings.ini'", sizeof(error));
+			return;
+		}
 		
-		FOR_EACH_VALUE(pKVConfigMain, pValue)
+		KeyValues* pKVConfigMain = pKVConfig->FindKey("MainSettings", false);
 		{
-			g_hRankNames.emplace_back(pValue->GetName());
-			g_hRankExp.emplace_back(pValue->GetInt(nullptr));
+			g_SMAPI->Format(g_sTableName, sizeof(g_sTableName), pKVConfigMain->GetString("lr_table", "lvl_base"));
+			g_SMAPI->Format(g_sPluginTitle, sizeof(g_sPluginTitle), pKVConfigMain->GetString("lr_plugin_title"));
+
+			g_Settings[LR_DB_Allow_UTF8MB4] = pKVConfigMain->GetInt("lr_db_allow_utf8mb4", 1);
+
+			// pKVConfig->GetString("lr_flag_adminmenu", "z");
+			// g_Settings[LR_FlagAdminmenu] = ReadFlagString(sBuffer);
+
+			g_Settings[LR_MinplayersCount] = pKVConfigMain->GetInt("lr_minplayers_count", 4);
+			g_Settings[LR_ShowResetMyStats] = pKVConfigMain->GetInt("lr_show_resetmystats", 1);
+
+			// if((g_Settings[LR_ResetMyStatsCooldown] = pKVConfig->GetInt("lr_resetmystats_cooldown", 86400)))
+			// {
+			// 	if(g_hLastResetMyStats)
+			// 	{
+			// 		g_hLastResetMyStats.Close();
+			// 	}
+
+			// 	g_hLastResetMyStats = new Cookie("LR_LastResetMyStats", NULL_STRING, CookieAccess_Private);
+			// }
+
+			g_Settings[LR_ShowUsualMessage] = pKVConfigMain->GetInt("lr_show_usualmessage", 1);
+			g_Settings[LR_ShowSpawnMessage] = pKVConfigMain->GetInt("lr_show_spawnmessage", 1);
+			g_Settings[LR_ShowLevelUpMessage] = pKVConfigMain->GetInt("lr_show_levelup_message", 0);
+			g_Settings[LR_ShowLevelDownMessage] = pKVConfigMain->GetInt("lr_show_leveldown_message", 0);
+			g_Settings[LR_ShowRankMessage] = pKVConfigMain->GetInt("lr_show_rankmessage", 1);
+			g_Settings[LR_ShowRankList] = pKVConfigMain->GetInt("lr_show_ranklist", 1);
+			g_Settings[LR_GiveExpRoundEnd] = pKVConfigMain->GetInt("lr_giveexp_roundend", 1);
+			g_Settings[LR_BlockWarmup] = pKVConfigMain->GetInt("lr_block_warmup", 1);
+			g_Settings[LR_AllAgainstAll] = pKVConfigMain->GetInt("lr_allagainst_all", 0);
+			g_Settings[LR_CleanDB_Days] = pKVConfigMain->GetInt("lr_cleandb_days", 30);
+			g_Settings[LR_CleanDB_BanClient] = pKVConfigMain->GetInt("lr_cleandb_banclient", 1);
+			g_Settings[LR_DB_SaveDataPlayer_Mode] = pKVConfigMain->GetInt("lr_db_savedataplayer_mode", 1);
+			g_Settings[LR_DB_Charset_Type] = pKVConfigMain->GetInt("lr_db_character_type", 0);
+			g_Settings[LR_TopCount] = pKVConfigMain->GetInt("lr_top_count", 0);
+		}
+
+		
+		pKVConfigMain = pKVConfig->FindKey("Points", false);
+		{
+
+			g_SettingsStats[LR_ExpKill] = pKVConfigMain->GetInt("lr_kill");
+			g_SettingsStats[LR_ExpKillIsBot] = pKVConfigMain->GetInt("lr_kill_is_bot");
+			g_SettingsStats[LR_ExpDeath] = pKVConfigMain->GetInt("lr_death");
+			g_SettingsStats[LR_ExpDeathIsBot] = pKVConfigMain->GetInt("lr_death_is_bot");
+			g_SettingsStats[LR_ExpGiveHeadShot] = pKVConfigMain->GetInt("lr_headshot", 1);
+			g_SettingsStats[LR_ExpGiveAssist] = pKVConfigMain->GetInt("lr_assist", 1);
+			g_SettingsStats[LR_ExpGiveSuicide] = pKVConfigMain->GetInt("lr_suicide", 0);
+			g_SettingsStats[LR_ExpGiveTeamKill] = pKVConfigMain->GetInt("lr_teamkill", 0);
+			g_SettingsStats[LR_ExpRoundWin] = pKVConfigMain->GetInt("lr_winround", 2);
+			g_SettingsStats[LR_ExpRoundLose] = pKVConfigMain->GetInt("lr_loseround", 2);
+			g_SettingsStats[LR_ExpRoundMVP] = pKVConfigMain->GetInt("lr_mvpround", 1);
+			g_SettingsStats[LR_ExpBombPlanted] = pKVConfigMain->GetInt("lr_bombplanted", 2);
+			g_SettingsStats[LR_ExpBombDefused] = pKVConfigMain->GetInt("lr_bombdefused", 2);
+			g_SettingsStats[LR_ExpBombDropped] = pKVConfigMain->GetInt("lr_bombdropped", 1);
+			g_SettingsStats[LR_ExpBombPickup] = pKVConfigMain->GetInt("lr_bombpickup", 1);
+			g_SettingsStats[LR_ExpHostageKilled] = pKVConfigMain->GetInt("lr_hostagekilled", 0);
+			g_SettingsStats[LR_ExpHostageRescued] = pKVConfigMain->GetInt("lr_hostagerescued", 2);
+		}
+
+		pKVConfigMain = pKVConfig->FindKey("Points_Bonuses", false);
+		{
+			char sBuffer[64];
+			for(int i = 0; i != 10;)
+			{
+				g_SMAPI->Format(sBuffer, sizeof(sBuffer), "lr_bonus_%i", i + 1);
+				g_iBonus[i++] = pKVConfigMain->GetInt(sBuffer, 0);
+			}
+		}
+
+		pKVConfigMain = pKVConfig->FindKey("Ranks", false);
+		{
+			g_hRankNames.clear();
+			g_hRankExp.clear();
+			
+			FOR_EACH_VALUE(pKVConfigMain, pValue)
+			{
+				g_hRankNames.emplace_back(pValue->GetName());
+				g_hRankExp.emplace_back(pValue->GetInt(nullptr));
+			}
 		}
 	}
-	delete pKVConfigMain;
-	CreateDatabases();
+	KeyValues* pKVConfig = new KeyValues("Databases");
+
+	if (!pKVConfig->LoadFromFile(g_pFullFileSystem, "addons/configs/databases.cfg")) {
+		V_strncpy(error, "Failed to load databases config 'addons/config/databases.cfg'", sizeof(error));
+		ConColorMsg(Color(255, 0, 0, 255), "[LR] %s\n", error);
+		return;
+	}
+
+	pKVConfig = pKVConfig->FindKey("levels_ranks", false);
+	if (!pKVConfig) {
+		g_SMAPI->Format(error, sizeof(error), "No databases.cfg 'levels_ranks'");
+		ConColorMsg(Color(255, 0, 0, 255), "[LR] %s\n", error);
+		return;
+	}
+
+	MySQLConnectionInfo info;
+	info.host = pKVConfig->GetString("host", nullptr);
+	info.user = pKVConfig->GetString("user", nullptr);
+	info.pass = pKVConfig->GetString("pass", nullptr);
+	info.database = pKVConfig->GetString("database", nullptr);
+	info.port = pKVConfig->GetInt("port");
+	g_pConnection = g_pMysqlClient->CreateMySQLConnection(info);
+
+	g_pConnection->Connect([](bool connect) {
+		if (!connect) {
+			META_CONPRINT("Failed to connect the mysql database\n");
+		} else {
+			char szQuery[1024];
+			g_SMAPI->Format(szQuery, sizeof(szQuery), "CREATE TABLE IF NOT EXISTS `%s` \
+(\
+`steam` varchar(22) COLLATE 'utf8_unicode_ci' PRIMARY KEY, \
+`name` varchar(32)%s, \
+`value` int NOT NULL DEFAULT 0, \
+`rank` int NOT NULL DEFAULT 0, \
+`kills` int NOT NULL DEFAULT 0, \
+`deaths` int NOT NULL DEFAULT 0, \
+`shoots` int NOT NULL DEFAULT 0, \
+`hits` int NOT NULL DEFAULT 0, \
+`headshots` int NOT NULL DEFAULT 0, \
+`assists` int NOT NULL DEFAULT 0, \
+`round_win` int NOT NULL DEFAULT 0, \
+`round_lose` int NOT NULL DEFAULT 0, \
+`playtime` int NOT NULL DEFAULT 0, \
+`lastconnect` int NOT NULL DEFAULT 0\
+);", g_sTableName, g_Settings[LR_DB_Allow_UTF8MB4] ? " COLLATE 'utf8mb4_unicode_ci'" : " COLLATE 'utf8_unicode_ci'");
+			g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+
+			g_SMAPI->Format(szQuery, sizeof(szQuery), "SELECT COUNT(`steam`) FROM `%s` WHERE `lastconnect` LIMIT 1;", g_sTableName);
+			g_pConnection->Query(szQuery, [](IMySQLQuery* test) {
+				auto results = test->GetResultSet();
+				if(results->FetchRow())
+				{
+					g_iDBCountPlayers = results->GetInt(0);
+				}
+
+				char sCharset[8], 
+		        	sCharsetType[16],
+					szQuery[256];
+
+				g_SMAPI->Format(sCharset, sizeof(sCharset), "%s", g_Settings[LR_DB_Allow_UTF8MB4] ? "utf8mb4" : "utf8");
+				g_SMAPI->Format(sCharsetType, sizeof(sCharsetType), "%s", g_Settings[LR_DB_Charset_Type] ? "_unicode_ci" : "_general_ci");
+
+				g_SMAPI->Format(szQuery, sizeof(szQuery), "SET NAMES '%s';", sCharset);
+				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+
+				g_SMAPI->Format(szQuery, sizeof(szQuery), "SET CHARSET '%s';", sCharset);
+				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+
+				g_SMAPI->Format(szQuery, sizeof(szQuery), "ALTER TABLE `%s` CHARACTER SET '%s' COLLATE '%s%s';", g_sTableName, sCharset, sCharset, sCharsetType);
+				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+
+				g_SMAPI->Format(szQuery, sizeof(szQuery), "ALTER TABLE `%s` MODIFY COLUMN `name` varchar(%i) CHARACTER SET '%s' COLLATE '%s%s' NOT NULL default '' AFTER `steam`;", g_sTableName, 128, sCharset, sCharset, sCharsetType);
+				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+
+				g_pLRApi->SetActive(true);
+				g_pLRApi->SendCoreIsReady();
+			});
+		}
+	});
 }
 
 void LRApi::ResetPlayerStats(int iSlot)
@@ -1468,7 +1462,7 @@ void LRApi::RoundWithoutValue()
 int LRApi::GetClientInfo(int iSlot, LR_StatsType StatsType, bool bSession)
 {
 	int iType = StatsType;
-	return (bSession ? g_iPlayerInfo[iSlot].iSessionStats[iType] : g_iPlayerInfo[iSlot].iStats[iType]) + (iType == ST_PLAYTIME ? std::time(0)-g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] : 0);
+	return bSession ? g_iPlayerInfo[iSlot].iSessionStats[iType] : g_iPlayerInfo[iSlot].iStats[iType];
 }
 
 bool LRApi::CheckCountPlayers()
