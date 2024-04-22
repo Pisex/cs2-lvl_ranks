@@ -50,7 +50,8 @@ enum LR_SettingType
     LR_DB_SaveDataPlayer_Mode,
     LR_DB_Allow_UTF8MB4,
     LR_DB_Charset_Type,
-    LR_TopCount
+    LR_TopCount,
+	LR_StartPoints
 };
 
 enum LR_SettingStatsType

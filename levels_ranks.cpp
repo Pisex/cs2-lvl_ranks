@@ -19,7 +19,7 @@ std::map<std::string, std::string> g_vecPhrases;
 char g_sPluginTitle[64], 
 	g_sTableName[32];
 
-int g_Settings[19],
+int g_Settings[20],
 	g_SettingsStats[18];
 
 LR_PlayerInfo	g_iPlayerInfo[64], 
@@ -164,7 +164,7 @@ void SaveDataPlayer(int iSlot, bool bDisconnect = false)
 ) \
 VALUES ('%s', %i, '%s', %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i);", g_sTableName, g_iPlayerInfo[iSlot].szAuth.c_str(), g_iPlayerInfo[iSlot].iStats[ST_EXP], g_pConnection->Escape(engine->GetClientConVarValue(iSlot, "name")).c_str(), g_iPlayerInfo[iSlot].iStats[ST_RANK], g_iPlayerInfo[iSlot].iStats[ST_KILLS], g_iPlayerInfo[iSlot].iStats[ST_DEATHS], g_iPlayerInfo[iSlot].iStats[ST_SHOOTS], g_iPlayerInfo[iSlot].iStats[ST_HITS], g_iPlayerInfo[iSlot].iStats[ST_HEADSHOTS], g_iPlayerInfo[iSlot].iStats[ST_ASSISTS], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSWIN], g_iPlayerInfo[iSlot].iStats[ST_ROUNDSLOSE], iTime-g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME], iTime);
 
-		g_pConnection->Query(szQuery, [](IMySQLQuery* test){});
+		g_pConnection->Query(szQuery, [](ISQLQuery* test){});
 
 		if(bDisconnect)
 		{
@@ -180,7 +180,7 @@ VALUES ('%s', %i, '%s', %i, %i, %i, %i, %i, %i, %i, %i, %i, %i, %i);", g_sTableN
 	SELECT COUNT(`steam`) FROM `%s` WHERE `playtime` >= %d AND `lastconnect`\
 ) AS `timepos` \
 LIMIT 1;", g_sTableName, g_iPlayerInfo[iSlot].iStats[ST_EXP], g_sTableName, iTime-g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME]);
-			g_pConnection->Query(szQuery, [iSlot](IMySQLQuery* test)
+			g_pConnection->Query(szQuery, [iSlot](ISQLQuery* test)
 			{
 				auto results = test->GetResultSet();
 				if(results->FetchRow())
@@ -325,7 +325,7 @@ void OverAllTopPlayers(int iSlot, bool bPlaytime = true)
 		};
 
 		g_SMAPI->Format(sQuery, sizeof(sQuery), "SELECT `name`, `steam`, %s FROM `%s` WHERE `lastconnect` ORDER BY %.10s DESC LIMIT %i;", sTable[bPlaytime], g_sTableName, sTable[bPlaytime], g_Settings[LR_TopCount]);
-		g_pConnection->Query(sQuery, [iSlot, bPlaytime](IMySQLQuery* test) {
+		g_pConnection->Query(sQuery, [iSlot, bPlaytime](ISQLQuery* test) {
 			auto results = test->GetResultSet();
 
 			char sFrase[32] = "OverAllTopPlayers";
@@ -781,7 +781,7 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 
 	char szQuery[512];
 	g_SMAPI->Format(szQuery, sizeof(szQuery), "SELECT `value`, `rank`, `kills`, `deaths`, `shoots`, `hits`, `headshots`, `assists`, `round_win`, `round_lose`, `playtime`, (SELECT COUNT(`steam`) FROM `%s` WHERE `value` >= `player`.`value` AND `lastconnect`) AS `exppos`, (SELECT COUNT(`steam`) FROM `%s` WHERE `playtime` >= `player`.`playtime` AND `lastconnect`) AS `timepos` FROM `%s` `player` WHERE `steam` = '%s' LIMIT 1;", g_sTableName, g_sTableName, g_sTableName, g_iPlayerInfo[slot.Get()].szAuth.c_str());
-	g_pConnection->Query(szQuery, [slot, this](IMySQLQuery* test)
+	g_pConnection->Query(szQuery, [slot, this](ISQLQuery* test)
 	{
 		auto results = test->GetResultSet();
 		if(results->FetchRow())
@@ -800,8 +800,8 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 		else
 		{
 			char szQuery[512];
-			g_SMAPI->Format(szQuery, sizeof(szQuery), "INSERT INTO `%s` (`steam`, `name`, `value`, `lastconnect`) VALUES ('%s', '%s', %i, %i);", g_sTableName, g_iPlayerInfo[slot.Get()].szAuth.c_str(), g_pConnection->Escape(engine->GetClientConVarValue(slot, "name")).c_str(), 0, std::time(0));
-			g_pConnection->Query(szQuery, [slot, this](IMySQLQuery* test)
+			g_SMAPI->Format(szQuery, sizeof(szQuery), "INSERT INTO `%s` (`steam`, `name`, `value`, `lastconnect`) VALUES ('%s', '%s', %i, %i);", g_sTableName, g_iPlayerInfo[slot.Get()].szAuth.c_str(), g_pConnection->Escape(engine->GetClientConVarValue(slot, "name")).c_str(), g_Settings[LR_StartPoints], std::time(0));
+			g_pConnection->Query(szQuery, [slot, this](ISQLQuery* test)
 			{
 				if(!g_iPlayerInfo[slot.Get()].bInitialized)
 				{
@@ -1132,12 +1132,12 @@ void StartupServer()
 		g_pUtils->HookEvent(g_PLID, "weapon_fire", 	OnOtherEvents);
 		g_pUtils->HookEvent(g_PLID, "player_hurt", 	OnOtherEvents);
 
-		g_pUtils->RegCommand(g_PLID, {"mm_lvl", "sm_lvl", "lvl"}, {"!lvl", "lvl", "!дмд", "дмд"}, [](int iSlot, const char* szContent){
+		g_pUtils->RegCommand(g_PLID, {"mm_lvl", "sm_lvl"}, {"!lvl", "lvl", "!дмд", "дмд"}, [](int iSlot, const char* szContent){
 			OnLRMenu(iSlot);
 			return false;
 		});
 
-		g_pUtils->RegCommand(g_PLID, {"mm_rank", "sm_rank", "rank"}, {"!rank", "rank", "!кфтл", "кфтл"}, [](int iSlot, const char* szContent){
+		g_pUtils->RegCommand(g_PLID, {"mm_rank", "sm_rank"}, {"!rank", "rank", "!кфтл", "кфтл"}, [](int iSlot, const char* szContent){
 			int iKills = g_iPlayerInfo[iSlot].iStats[ST_KILLS],
 				iDeaths = g_iPlayerInfo[iSlot].iStats[ST_DEATHS];
 
@@ -1163,16 +1163,16 @@ void StartupServer()
 			return false;
 		});
 
-		g_pUtils->RegCommand(g_PLID, {"mm_session", "sm_session", "session"}, {"!session", "session", "!ыуыышщт", "ыуыышщт"}, [](int iSlot, const char* szContent){
+		g_pUtils->RegCommand(g_PLID, {"mm_session", "sm_session"}, {"!session", "session", "!ыуыышщт", "ыуыышщт"}, [](int iSlot, const char* szContent){
 			return false;
 		});
 
-		g_pUtils->RegCommand(g_PLID, {"mm_toptime", "sm_toptime", "toptime"}, {"!toptime", "toptime", "!ещзешьу", "ещзешьу"}, [](int iSlot, const char* szContent){
+		g_pUtils->RegCommand(g_PLID, {"mm_toptime", "sm_toptime"}, {"!toptime", "toptime", "!ещзешьу", "ещзешьу"}, [](int iSlot, const char* szContent){
 			OverAllTopPlayers(iSlot);
 			return false;
 		});
 
-		g_pUtils->RegCommand(g_PLID, {"mm_top", "sm_top", "top"}, {"!top", "top", "!ещз", "ещз"}, [](int iSlot, const char* szContent){
+		g_pUtils->RegCommand(g_PLID, {"mm_top", "sm_top"}, {"!top", "top", "!ещз", "ещз"}, [](int iSlot, const char* szContent){
 			OverAllTopPlayers(iSlot, false);
 			return false;
 		});
@@ -1190,7 +1190,7 @@ void LR::AllPluginsLoaded()
 {
 	char error[64] = { 0 };
 	int ret;
-	g_pMysqlClient = static_cast<IMySQLClient*>(g_SMAPI->MetaFactory(MYSQLMM_INTERFACE, &ret, nullptr));
+	g_pMysqlClient = ((ISQLInterface *)g_SMAPI->MetaFactory(SQLMM_INTERFACE, &ret, nullptr))->GetMySQLClient();
 
 	if (ret == META_IFACE_FAILED) {
 		V_strncpy(error, "Missing MYSQL plugin", sizeof(error));
@@ -1295,6 +1295,7 @@ void LR::AllPluginsLoaded()
 			g_Settings[LR_DB_SaveDataPlayer_Mode] = pKVConfigMain->GetInt("lr_db_savedataplayer_mode", 1);
 			g_Settings[LR_DB_Charset_Type] = pKVConfigMain->GetInt("lr_db_character_type", 0);
 			g_Settings[LR_TopCount] = pKVConfigMain->GetInt("lr_top_count", 0);
+			g_Settings[LR_StartPoints] = pKVConfigMain->GetInt("lr_start_points", 0);
 		}
 
 		
@@ -1387,10 +1388,10 @@ void LR::AllPluginsLoaded()
 `playtime` int NOT NULL DEFAULT 0, \
 `lastconnect` int NOT NULL DEFAULT 0\
 );", g_sTableName, g_Settings[LR_DB_Allow_UTF8MB4] ? " COLLATE 'utf8mb4_unicode_ci'" : " COLLATE 'utf8_unicode_ci'");
-			g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+			g_pConnection->Query(szQuery, [](ISQLQuery* test) {});
 
 			g_SMAPI->Format(szQuery, sizeof(szQuery), "SELECT COUNT(`steam`) FROM `%s` WHERE `lastconnect` LIMIT 1;", g_sTableName);
-			g_pConnection->Query(szQuery, [](IMySQLQuery* test) {
+			g_pConnection->Query(szQuery, [](ISQLQuery* test) {
 				auto results = test->GetResultSet();
 				if(results->FetchRow())
 				{
@@ -1405,16 +1406,16 @@ void LR::AllPluginsLoaded()
 				g_SMAPI->Format(sCharsetType, sizeof(sCharsetType), "%s", g_Settings[LR_DB_Charset_Type] ? "_unicode_ci" : "_general_ci");
 
 				g_SMAPI->Format(szQuery, sizeof(szQuery), "SET NAMES '%s';", sCharset);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+				g_pConnection->Query(szQuery, [](ISQLQuery* test) {});
 
 				g_SMAPI->Format(szQuery, sizeof(szQuery), "SET CHARSET '%s';", sCharset);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+				g_pConnection->Query(szQuery, [](ISQLQuery* test) {});
 
 				g_SMAPI->Format(szQuery, sizeof(szQuery), "ALTER TABLE `%s` CHARACTER SET '%s' COLLATE '%s%s';", g_sTableName, sCharset, sCharset, sCharsetType);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+				g_pConnection->Query(szQuery, [](ISQLQuery* test) {});
 
 				g_SMAPI->Format(szQuery, sizeof(szQuery), "ALTER TABLE `%s` MODIFY COLUMN `name` varchar(%i) CHARACTER SET '%s' COLLATE '%s%s' NOT NULL default '' AFTER `steam`;", g_sTableName, 128, sCharset, sCharset, sCharsetType);
-				g_pConnection->Query(szQuery, [](IMySQLQuery* test) {});
+				g_pConnection->Query(szQuery, [](ISQLQuery* test) {});
 
 				g_pLRApi->SetActive(true);
 				g_pLRApi->SendCoreIsReady();
