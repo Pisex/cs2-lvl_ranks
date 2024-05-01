@@ -809,6 +809,7 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 
 					g_iDBCountPlayers++;				
 					g_iPlayerInfo[slot.Get()].bInitialized = true;
+					g_iPlayerInfo[slot.Get()].iStats[ST_EXP] = g_Settings[LR_StartPoints];
 
 					CheckRank(slot.Get(), false);
 
