@@ -51,7 +51,8 @@ enum LR_SettingType
     LR_DB_Allow_UTF8MB4,
     LR_DB_Charset_Type,
     LR_TopCount,
-	LR_StartPoints
+	LR_StartPoints,
+	LR_TypeStatistics
 };
 
 enum LR_SettingStatsType
@@ -103,6 +104,7 @@ typedef std::function<void(int iSlot, const char* SteamID)>   OnResetPlayerStats
 typedef std::function<void(int iSlot, int iExpPos, int iTimePos)>   OnPlayerPosInTop;
 typedef std::function<void(int iSlot, int &iGiveExp)>   OnExpChangedPre;
 typedef std::function<void(int iSlot, int iGiveExp, int iNewExpCount)>   OnExpChangedPost;
+typedef std::function<void(int iType)>   OnDatabaseCleanup;
 
 class ILRApi
 {
@@ -135,4 +137,7 @@ public:
     virtual void ResetPlayerStats(int iSlot) = 0;
 
 	virtual IMySQLConnection* GetDatabases() = 0;
+	virtual void PrintToChat(int iSlot, const char* msg, ...) = 0;
+	
+    virtual void HookOnDatabaseCleanup(SourceMM::PluginId id, OnDatabaseCleanup fn) = 0;
 };

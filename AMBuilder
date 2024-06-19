@@ -7,37 +7,28 @@ import os
 # so just fall back to the single binary.
 # Multi-sdk solutions should be manually loaded with a custom plugin loader (examples being sourcemod, stripper:source)
 for sdk_target in MMSPlugin.sdk_targets:
-    sdk = sdk_target.sdk
-    cxx = sdk_target.cxx
+  sdk = sdk_target.sdk
+  cxx = sdk_target.cxx
+  cxx.cxxflags += ['-Wno-invalid-offsetof']
 
-    binary = MMSPlugin.HL2Library(builder, cxx, MMSPlugin.plugin_name, sdk)
+  binary = MMSPlugin.HL2Library(builder, cxx, MMSPlugin.plugin_name, sdk)
 
-    binary.custom = [builder.tools.Protoc(protoc = sdk_target.protoc, sources = [
-      os.path.join(sdk['path'], 'common', 'network_connection.proto')
-    ])]
-    
-    binary.compiler.cxxincludes += [
-      os.path.join(builder.sourcePath, 'include'),
-    ]
+  binary.custom = [builder.tools.Protoc(protoc = sdk_target.protoc, sources = [
+    os.path.join(sdk['path'], 'common', 'network_connection.proto')
+  ])]
+  
+  binary.compiler.cxxincludes += [
+    os.path.join(builder.sourcePath, 'include'),
+    os.path.join(builder.sourcePath, '..', 'SchemaEntity'),
+  ]
 
-    binary.sources += [
-      'levels_ranks.cpp',
-      os.path.join('sdk', 'schemasystem.cpp'),
-      os.path.join('sdk', 'module.cpp'),
-      os.path.join('sdk', 'memaddr.cpp')
-    ]
+  binary.sources += [
+    'levels_ranks.cpp',
+    os.path.join('..', 'SchemaEntity', 'schemasystem.cpp'),
+  ]
 
-    if sdk_target in ['dota', 'cs2']:
-      binary.sources += [
-      os.path.join(sdk.path, 'tier1', 'convar.cpp'),
-      os.path.join(sdk.path, 'tier1', 'generichash.cpp'),
-      os.path.join(sdk.path, 'entity2', 'entitysystem.cpp'),
-      os.path.join(sdk.path, 'entity2', 'entityidentity.cpp'),
-      os.path.join(sdk.path, 'public', 'tier0', 'memoverride.cpp')
-    ]
-
-    if cxx.target.arch == 'x86':
-      binary.sources += ['sourcehook/sourcehook_hookmangen.cpp']
-    nodes = builder.Add(binary)
-    MMSPlugin.binaries += [nodes]
+  if cxx.target.arch == 'x86':
+    binary.sources += ['sourcehook/sourcehook_hookmangen.cpp']
+  nodes = builder.Add(binary)
+  MMSPlugin.binaries += [nodes]
     

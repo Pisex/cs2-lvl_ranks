@@ -11,17 +11,12 @@
 #include "vector.h"
 #include <deque>
 #include <functional>
-#include "sdk/utils.hpp"
+#include "utils.hpp"
 #include <utlstring.h>
 #include <KeyValues.h>
-#include "sdk/schemasystem.h"
-#include "sdk/CBaseEntity.h"
-#include "sdk/CGameRulesProxy.h"
-#include "sdk/CBasePlayerPawn.h"
-#include "sdk/CCSPlayerController.h"
-#include "sdk/CCSPlayer_ItemServices.h"
-#include "sdk/CSmokeGrenadeProjectile.h"
-#include "sdk/module.h"
+#include "CCSPlayerController.h"
+#include "CGameRules.h"
+#include "module.h"
 #include "include/mysql_mm.h"
 #include "include/lvl_ranks.h"
 #include "include/menus.h"
@@ -55,6 +50,8 @@
 #define LR_DB_Allow_UTF8MB4 16
 #define LR_DB_Charset_Type 17
 #define LR_TopCount 18
+#define LR_StartPoints 19
+#define LR_TypeStatistics 20
 
 
 #define LR_ExpKill 0
@@ -97,6 +94,7 @@ public:
 	bool Unload(char* error, size_t maxlen);
 	void AllPluginsLoaded();
 	void* OnMetamodQuery(const char* iface, int* ret);
+	void OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, uint64 xuid);
 private:
 	const char* GetAuthor();
 	const char* GetName();
@@ -108,7 +106,6 @@ private:
 	const char* GetLogTag();
 
 private: // Hooks
-	void OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, uint64 xuid);
 	void OnClientDisconnect( CPlayerSlot slot, ENetworkDisconnectionReason reason, const char *pszName, uint64 xuid, const char *pszNetworkID );
 };
 
@@ -267,6 +264,22 @@ public:
 	}
 
 	IMySQLConnection* GetDatabases();
+
+	void PrintToChat(int iSlot, const char* msg, ...);
+
+	void HookOnDatabaseCleanup(SourceMM::PluginId id, OnDatabaseCleanup fn) override {
+		OnDatabaseCleanupHook[id].push_back(fn);
+	}
+	void SendOnDatabaseCleanupHook(int iType) {
+		for(auto& item : OnDatabaseCleanupHook)
+		{
+			for (auto& callback : item.second) {
+				if (callback) {
+					callback(iType);
+				}
+			}
+		}
+	}
 private:
 	bool bActive = false;
 
@@ -280,6 +293,7 @@ private:
 	std::map<int, std::vector<OnPlayerPosInTop>> 	OnPlayerPosInTopHook;
 	std::map<int, std::vector<OnExpChangedPre>> 	OnExpChangedPreHook;
 	std::map<int, std::vector<OnExpChangedPost>> 	OnExpChangedPostHook;
+	std::map<int, std::vector<OnDatabaseCleanup>> 	OnDatabaseCleanupHook;
 };
 
 struct LR_PlayerInfo

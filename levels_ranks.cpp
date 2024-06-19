@@ -19,7 +19,7 @@ std::map<std::string, std::string> g_vecPhrases;
 char g_sPluginTitle[64], 
 	g_sTableName[32];
 
-int g_Settings[20],
+int g_Settings[21],
 	g_SettingsStats[18];
 
 LR_PlayerInfo	g_iPlayerInfo[64], 
@@ -118,7 +118,7 @@ void ClientPrint(int iSlot, const char *msg, ...)
 
 bool CheckStatus(int iSlot)
 {
-	CCSPlayerController* pPlayerController = static_cast<CCSPlayerController*>(g_pEntitySystem->GetBaseEntity(static_cast<CEntityIndex>(iSlot + 1)));
+	CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(iSlot);
 	if (!pPlayerController || !pPlayerController->m_hPawn() || pPlayerController->m_steamID() <= 0)
 		return false;
 
@@ -136,7 +136,7 @@ void ResetPlayerData(int iSlot)
 	g_iPlayerInfo[iSlot].iKillStreak = 0;
 	
 	g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] = std::time(0);
-	g_iPlayerInfo[iSlot].iStats[ST_EXP] = 0;
+	g_iPlayerInfo[iSlot].iStats[ST_EXP] = g_Settings[LR_TypeStatistics] ? 1000 : g_Settings[LR_StartPoints];
 }
 
 void SaveDataPlayer(int iSlot, bool bDisconnect = false)
@@ -278,6 +278,11 @@ bool NotifClient(int iSlot, int iValue, const char* sTitlePhrase, bool bAllow = 
 		{
 			int iExpBuffer = 0,
 				iOldExp = g_iPlayerInfo[iSlot].iStats[ST_EXP];
+
+			if(g_Settings[LR_TypeStatistics])
+			{
+				iExpBuffer = 400;
+			}
 
 			if((g_iPlayerInfo[iSlot].iStats[ST_EXP] += iValue) < iExpBuffer)
 			{
@@ -492,6 +497,10 @@ void SessionStatsMenuHandle(const char* szBack, const char* szFront, int iItem, 
 		MyStats(iSlot);
 }
 
+int RoundToCeil(float number) {
+    return static_cast<int>(std::ceil(number));
+}
+
 void MyStatsSession(int iSlot)
 {
 	int iRoundsWin = g_iPlayerInfo[iSlot].iSessionStats[ST_ROUNDSWIN],
@@ -524,13 +533,13 @@ void MyStatsSession(int iSlot)
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
 	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoAssists")].c_str(), g_iPlayerInfo[iSlot].iSessionStats[ST_ASSISTS]);
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
-	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoHeadshots")].c_str(), iHeadshots, (100 / (iKills ? iKills : 1) * iHeadshots));
+	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoHeadshots")].c_str(), iHeadshots, RoundToCeil(100.0 / (iKills ? iKills : 1) * iHeadshots));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
 	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoKDR")].c_str(), iKills / (iDeaths ? float(iDeaths) : 1.0));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
-	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoAccuracy")].c_str(), (100 / (iShots ? iShots : 1) * g_iPlayerInfo[iSlot].iSessionStats[ST_HITS]));
+	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoAccuracy")].c_str(), RoundToCeil(100.0 / (iShots ? float(iShots) : 1.0) * g_iPlayerInfo[iSlot].iSessionStats[ST_HITS]));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
-	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoWinRate")].c_str(), (100 / (iRoundsAll ? iRoundsAll : 1) * iRoundsWin));
+	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoWinRate")].c_str(), RoundToCeil(100.0 / (iRoundsAll ? float(iRoundsAll) : 1.0) * iRoundsWin));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
 
 	g_pMenus->SetExitMenu(hMenu, true);
@@ -586,13 +595,13 @@ void MyStats(int iSlot)
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
 	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoAssists")].c_str(), g_iPlayerInfo[iSlot].iStats[ST_ASSISTS]);
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
-	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoHeadshots")].c_str(), iHeadshots, (100 / (iKills ? iKills : 1) * iHeadshots));
+	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoHeadshots")].c_str(), iHeadshots, RoundToCeil(100.0 / (iKills ? iKills : 1) * iHeadshots));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
 	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoKDR")].c_str(), iKills / (iDeaths ? float(iDeaths) : 1.0));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
-	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoAccuracy")].c_str(), (100 / (iShots ? iShots : 1) * g_iPlayerInfo[iSlot].iStats[ST_HITS]));
+	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoAccuracy")].c_str(), RoundToCeil(100.0 / (iShots ? float(iShots) : 1.0) * g_iPlayerInfo[iSlot].iSessionStats[ST_HITS]));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
-	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoWinRate")].c_str(), (100 / (iRoundsAll ? iRoundsAll : 1) * iRoundsWin));
+	g_SMAPI->Format(sText, sizeof(sText), g_vecPhrases[std::string("MyStatsInfoWinRate")].c_str(), RoundToCeil(100.0 / (iRoundsAll ? float(iRoundsAll) : 1.0) * iRoundsWin));
 	g_pMenus->AddItemMenu(hMenu, "", sText, ITEM_DISABLED);
 
 	// if(g_hForward_CreatedMenu[LR_MyStatsSecondary].FunctionCount)
@@ -728,6 +737,74 @@ void* LR::OnMetamodQuery(const char* iface, int* ret)
 	return nullptr;
 }
 
+CON_COMMAND_EXTERN(mm_lvl_reset, ResetCommand, "Reset player statistics");
+
+void ResetCommand(const CCommandContext& context, const CCommand& args)
+{
+	if(args.ArgC() > 1)
+	{
+		int iType = -1;
+		char sBuffer[256];
+		g_SMAPI->Format(sBuffer, sizeof(sBuffer), "%s", args.Arg(1));
+		if(!strcmp(sBuffer, "all"))
+		{
+			iType = 0;
+		}
+		else if(!strcmp(sBuffer, "exp"))
+		{
+			iType = 1;
+		}
+		else if(!strcmp(sBuffer, "stats"))
+		{
+			iType = 2;
+		}
+
+		if(iType != -1)
+		{
+			switch(iType)
+			{
+				case 0:
+				{
+					g_SMAPI->Format(sBuffer, sizeof(sBuffer), "TRUNCATE TABLE `%s`;", g_sTableName);
+					break;
+				}
+
+				case 1:
+				{
+					g_SMAPI->Format(sBuffer, sizeof(sBuffer), "UPDATE `%s` SET `value` = %i, `rank` = 0;", g_sTableName, g_Settings[LR_TypeStatistics] ? 1000 : 0);
+					break;
+				}
+
+				case 2:
+				{
+					g_SMAPI->Format(sBuffer, sizeof(sBuffer), "UPDATE `%s` SET `kills` = 0, `deaths` = 0, `shoots` = 0, `hits` = 0, `headshots` = 0, `assists` = 0, `round_win` = 0, `round_lose` = 0;", g_sTableName);
+					break;
+				}
+			}
+
+			g_pLRApi->SendOnDatabaseCleanupHook(iType);
+			
+			g_pConnection->Query(sBuffer, [iType](ISQLQuery* test) {
+				const char* sTypes[] = {"all", "exp", "stats"};
+				for(int i = 0; i < 64; i++)
+				{
+					if(g_iPlayerInfo[i].bInitialized)
+					{
+						g_LR.OnClientPutInServer(i, NULL, 0, 0);
+					}
+				}
+
+				Msg("[LR] Successful clearing %s data in the database!\n", sTypes[iType]);
+			});
+		}
+		else
+		{
+			Msg("[LR] %s - invalid type of cleaning.\n", sBuffer);
+		}
+	}
+	else Msg("Usage: mm_lvl_reset <type>\n");
+}
+
 bool LR::Load(PluginId id, ISmmAPI* ismm, char* error, size_t maxlen, bool late)
 {
 	PLUGIN_SAVEVARS();
@@ -748,6 +825,8 @@ bool LR::Load(PluginId id, ISmmAPI* ismm, char* error, size_t maxlen, bool late)
 
 	g_pLRApi = new LRApi();
 	g_pLRCore = g_pLRApi;
+	
+	ConVar_Register(FCVAR_RELEASE | FCVAR_SERVER_CAN_EXECUTE | FCVAR_GAMEDLL);
 
 	return true;
 }
@@ -773,7 +852,7 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 	if (slot.Get() == -1)
     	return;
 
-	CCSPlayerController* pPlayerController = static_cast<CCSPlayerController*>(g_pEntitySystem->GetBaseEntity(static_cast<CEntityIndex>(slot.Get() + 1)));
+	CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(slot.Get());
 	if (!pPlayerController || pPlayerController->m_steamID() <= 0)
 		return;
 	
@@ -800,7 +879,7 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 		else
 		{
 			char szQuery[512];
-			g_SMAPI->Format(szQuery, sizeof(szQuery), "INSERT INTO `%s` (`steam`, `name`, `value`, `lastconnect`) VALUES ('%s', '%s', %i, %i);", g_sTableName, g_iPlayerInfo[slot.Get()].szAuth.c_str(), g_pConnection->Escape(engine->GetClientConVarValue(slot, "name")).c_str(), g_Settings[LR_StartPoints], std::time(0));
+			g_SMAPI->Format(szQuery, sizeof(szQuery), "INSERT INTO `%s` (`steam`, `name`, `value`, `lastconnect`) VALUES ('%s', '%s', %i, %i);", g_sTableName, g_iPlayerInfo[slot.Get()].szAuth.c_str(), g_pConnection->Escape(engine->GetClientConVarValue(slot, "name")).c_str(), g_Settings[LR_TypeStatistics] ? 1000 : g_Settings[LR_StartPoints], std::time(0));
 			g_pConnection->Query(szQuery, [slot, this](ISQLQuery* test)
 			{
 				if(!g_iPlayerInfo[slot.Get()].bInitialized)
@@ -907,6 +986,10 @@ void OnHostageEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 	}
 }
 
+int RoundToNearest(float number) {
+    return static_cast<int>(std::round(number));
+}
+
 void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 {
 	if(sName[6] == 's')
@@ -915,7 +998,7 @@ void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 
 		for (int i = 0; i < 64; i++)
 		{
-			CCSPlayerController* pPlayerController = static_cast<CCSPlayerController*>(g_pEntitySystem->GetBaseEntity(static_cast<CEntityIndex>(i + 1)));
+			CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(i);
 			if (pPlayerController && pPlayerController->m_steamID() > 0 && pPlayerController->m_iTeamNum() > 1 && pPlayerController->m_hPawn() && pPlayerController->m_hPlayerPawn())
 			{
 				iPlayers++;
@@ -930,7 +1013,7 @@ void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 		{
 			for (int i = 0; i < 64; i++)
 			{
-				CCSPlayerController* pPlayerController = static_cast<CCSPlayerController*>(g_pEntitySystem->GetBaseEntity(static_cast<CEntityIndex>(i + 1)));
+				CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(i);
 				if(pPlayerController && pPlayerController->m_steamID() > 0)
 				{
 					if(bWarningMessage)
@@ -952,7 +1035,7 @@ void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 			int iTeam = 0;
 			for (int i = 0; i < 64; i++)
 			{
-				CCSPlayerController* pPlayerController = static_cast<CCSPlayerController*>(g_pEntitySystem->GetBaseEntity(static_cast<CEntityIndex>(i + 1)));
+				CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(i);
 				if (pPlayerController && pPlayerController->m_hPawn() && pPlayerController->m_steamID() > 0)
 				{
 					if((iTeam = pPlayerController->m_iTeamNum()) > 1)
@@ -1032,16 +1115,45 @@ void OnPlayerDeathEvent(const char* sName, IGameEvent* event, bool bDontBroadcas
 			}
 			else
 			{
-				int iExpAttacker = 0;
-				int iExpVictim = 0;
+				int iExpAttacker = 0, iExpVictim = 0;
 
 				bool bFakeClient = pPlayerClient->m_steamID() <= 0;
 				bool bFakeAttacker = pPlayerAttacker->m_steamID() <= 0;
-				
-				iExpAttacker = g_SettingsStats[LR_ExpKill + bFakeClient];
-				iExpVictim = g_SettingsStats[LR_ExpDeath + bFakeAttacker];
 
-				g_pLRApi->SendOnPlayerKilledPreHook(event, iExpAttacker, g_iPlayerInfo[iClient].iStats[ST_EXP], g_iPlayerInfo[iAttacker].iStats[ST_EXP]);
+				if(!g_Settings[LR_TypeStatistics])
+				{
+					iExpAttacker = g_SettingsStats[LR_ExpKill + bFakeClient];
+					iExpVictim = g_SettingsStats[LR_ExpDeath + bFakeAttacker];
+					
+					g_pLRApi->SendOnPlayerKilledPreHook(event, iExpAttacker, g_iPlayerInfo[iClient].iStats[ST_EXP], g_iPlayerInfo[iAttacker].iStats[ST_EXP]);
+				}
+				else if(!bFakeClient && !bFakeAttacker)
+				{
+					if(g_Settings[LR_TypeStatistics] == 1)
+					{
+						iExpAttacker = RoundToNearest(float(g_iPlayerInfo[iClient].iStats[ST_EXP]) / g_iPlayerInfo[iAttacker].iStats[ST_EXP] * 5.0);
+
+						g_pLRApi->SendOnPlayerKilledPreHook(event, iExpAttacker, g_iPlayerInfo[iClient].iStats[ST_EXP], g_iPlayerInfo[iAttacker].iStats[ST_EXP]);
+
+						if(iExpAttacker < 1) 
+						{
+							iExpAttacker = 1;
+						}
+
+						if((iExpVictim = RoundToNearest(iExpAttacker * (g_SettingsStats[LR_ExpKillCoefficient]/100))) < 1)
+						{
+							iExpVictim = 1;
+						}
+					}
+					else
+					{
+						iExpAttacker = g_iPlayerInfo[iClient].iStats[ST_EXP] - g_iPlayerInfo[iAttacker].iStats[ST_EXP];
+
+						g_pLRApi->SendOnPlayerKilledPreHook(event, iExpAttacker, g_iPlayerInfo[iClient].iStats[ST_EXP], g_iPlayerInfo[iAttacker].iStats[ST_EXP]);
+				
+						iExpVictim = iExpAttacker = iExpAttacker < 3 ? 2 : (iExpAttacker / 100) + 2;
+					}
+				}
 
 				if(NotifClient(iAttacker, iExpAttacker, "Kill") + NotifClient(iClient, -iExpVictim, "MyDeath"))
 				{
@@ -1258,12 +1370,12 @@ void LR::AllPluginsLoaded()
 			V_strncpy(error, "Failed to load levels ranks config 'addons/config/levels_ranks/settings.ini'", sizeof(error));
 			return;
 		}
-		
+		int iTypeStatistics;
 		KeyValues* pKVConfigMain = pKVConfig->FindKey("MainSettings", false);
 		{
 			g_SMAPI->Format(g_sTableName, sizeof(g_sTableName), pKVConfigMain->GetString("lr_table", "lvl_base"));
 			g_SMAPI->Format(g_sPluginTitle, sizeof(g_sPluginTitle), pKVConfigMain->GetString("lr_plugin_title"));
-
+			iTypeStatistics = (g_Settings[LR_TypeStatistics] = pKVConfigMain->GetInt("lr_type_statistics", 0));
 			g_Settings[LR_DB_Allow_UTF8MB4] = pKVConfigMain->GetInt("lr_db_allow_utf8mb4", 1);
 
 			// pKVConfig->GetString("lr_flag_adminmenu", "z");
@@ -1299,14 +1411,46 @@ void LR::AllPluginsLoaded()
 			g_Settings[LR_StartPoints] = pKVConfigMain->GetInt("lr_start_points", 0);
 		}
 
-		
-		pKVConfigMain = pKVConfig->FindKey("Points", false);
+		switch(iTypeStatistics)
 		{
+			case 0:
+			{
+				pKVConfigMain = pKVConfig->FindKey("Funded_System", false);
 
-			g_SettingsStats[LR_ExpKill] = pKVConfigMain->GetInt("lr_kill");
-			g_SettingsStats[LR_ExpKillIsBot] = pKVConfigMain->GetInt("lr_kill_is_bot");
-			g_SettingsStats[LR_ExpDeath] = pKVConfigMain->GetInt("lr_death");
-			g_SettingsStats[LR_ExpDeathIsBot] = pKVConfigMain->GetInt("lr_death_is_bot");
+				g_SettingsStats[LR_ExpKill] = pKVConfigMain->GetInt("lr_kill");
+				g_SettingsStats[LR_ExpKillIsBot] = pKVConfigMain->GetInt("lr_kill_is_bot");
+				g_SettingsStats[LR_ExpDeath] = pKVConfigMain->GetInt("lr_death");
+				g_SettingsStats[LR_ExpDeathIsBot] = pKVConfigMain->GetInt("lr_death_is_bot");
+				break;
+			}
+
+			case 1:
+			{
+				pKVConfigMain = pKVConfig->FindKey("Rating_Extended", false);
+
+				float flKillCoefficient = pKVConfigMain->GetFloat("lr_killcoeff", 1.0);
+
+				if(flKillCoefficient < 0.5)
+				{
+					flKillCoefficient = 0.5;
+				}
+				else if(flKillCoefficient > 1.5)
+				{
+					flKillCoefficient = 1.5;
+				}
+
+				g_SettingsStats[LR_ExpKillCoefficient] = flKillCoefficient*100;
+				break;
+			}
+
+			case 2:
+			{
+				pKVConfigMain = pKVConfig->FindKey("Rating_Simple", false);
+				break;
+			}
+		}
+		if(pKVConfigMain)
+		{
 			g_SettingsStats[LR_ExpGiveHeadShot] = pKVConfigMain->GetInt("lr_headshot", 1);
 			g_SettingsStats[LR_ExpGiveAssist] = pKVConfigMain->GetInt("lr_assist", 1);
 			g_SettingsStats[LR_ExpGiveSuicide] = pKVConfigMain->GetInt("lr_suicide", 0);
@@ -1321,14 +1465,16 @@ void LR::AllPluginsLoaded()
 			g_SettingsStats[LR_ExpHostageKilled] = pKVConfigMain->GetInt("lr_hostagekilled", 0);
 			g_SettingsStats[LR_ExpHostageRescued] = pKVConfigMain->GetInt("lr_hostagerescued", 2);
 		}
-
-		pKVConfigMain = pKVConfig->FindKey("Points_Bonuses", false);
+		if(iTypeStatistics != 2)
 		{
-			char sBuffer[64];
-			for(int i = 0; i != 10;)
+			pKVConfigMain = pKVConfig->FindKey("Special_Bonuses", false);
 			{
-				g_SMAPI->Format(sBuffer, sizeof(sBuffer), "lr_bonus_%i", i + 1);
-				g_iBonus[i++] = pKVConfigMain->GetInt(sBuffer, 0);
+				char sBuffer[64];
+				for(int i = 0; i != 10;)
+				{
+					g_SMAPI->Format(sBuffer, sizeof(sBuffer), "lr_bonus_%i", i + 1);
+					g_iBonus[i++] = pKVConfigMain->GetInt(sBuffer, 0);
+				}
 			}
 		}
 
@@ -1440,6 +1586,11 @@ bool LRApi::ChangeClientValue(int iSlot, int iGiveExp)
 		int iExpMin = 0,
 			iOldExp = g_iPlayerInfo[iSlot].iStats[ST_EXP];
 
+		if(g_Settings[LR_TypeStatistics])
+		{
+			iExpMin = 400;
+		}
+
 		if((g_iPlayerInfo[iSlot].iStats[ST_EXP] += iGiveExp) < iExpMin)
 		{
 			iGiveExp = (g_iPlayerInfo[iSlot].iStats[ST_EXP] = iExpMin) - iOldExp;
@@ -1507,6 +1658,17 @@ int LRApi::GetCountPlayers() {
 	return g_iDBCountPlayers;
 }
 
+void LRApi::PrintToChat(int iSlot, const char* msg, ...)
+{
+	va_list args;
+	va_start(args, msg);
+
+	char buf[512];
+	V_vsnprintf(buf, sizeof(buf), msg, args);
+	va_end(args);
+	ClientPrint(iSlot, buf);
+}
+
 ///////////////////////////////////////
 const char* LR::GetLicense()
 {
@@ -1515,7 +1677,7 @@ const char* LR::GetLicense()
 
 const char* LR::GetVersion()
 {
-	return "1.0.2";
+	return "1.1";
 }
 
 const char* LR::GetDate()
