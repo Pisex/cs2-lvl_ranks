@@ -888,7 +888,7 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 
 					g_iDBCountPlayers++;				
 					g_iPlayerInfo[slot.Get()].bInitialized = true;
-					g_iPlayerInfo[slot.Get()].iStats[ST_EXP] = g_Settings[LR_StartPoints];
+					g_iPlayerInfo[slot.Get()].iStats[ST_EXP] = g_Settings[LR_TypeStatistics] ? 1000 : g_Settings[LR_StartPoints];
 
 					CheckRank(slot.Get(), false);
 
@@ -1117,8 +1117,8 @@ void OnPlayerDeathEvent(const char* sName, IGameEvent* event, bool bDontBroadcas
 			{
 				int iExpAttacker = 0, iExpVictim = 0;
 
-				bool bFakeClient = pPlayerClient->m_steamID() <= 0;
-				bool bFakeAttacker = pPlayerAttacker->m_steamID() <= 0;
+				bool bFakeClient = pPlayerClient->m_steamID() <= 0 || !g_iPlayerInfo[iClient].bInitialized;
+				bool bFakeAttacker = pPlayerAttacker->m_steamID() <= 0 || !g_iPlayerInfo[iAttacker].bInitialized;
 
 				if(!g_Settings[LR_TypeStatistics])
 				{
@@ -1677,7 +1677,7 @@ const char* LR::GetLicense()
 
 const char* LR::GetVersion()
 {
-	return "1.1";
+	return "1.1.1";
 }
 
 const char* LR::GetDate()
