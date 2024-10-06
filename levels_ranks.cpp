@@ -43,6 +43,7 @@ IMySQLConnection* g_pConnection;
 
 IMenusApi* g_pMenus;
 IUtilsApi* g_pUtils;
+IPlayersApi* g_pPlayers;
 
 LRApi* g_pLRApi = nullptr;
 ILRApi* g_pLRCore = nullptr;
@@ -358,15 +359,6 @@ void OverAllTopPlayers(int iSlot, bool bPlaytime = true)
 					g_pMenus->AddItemMenu(hMenu, "", sBuffer, ITEM_DISABLED);
 				}
 
-				// if(g_iPlayerInfo[iSlot].szAuth.c_str()[0])
-				// {
-				// 	int iPlace = g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP + bPlaytime];
-
-				// 	g_SMAPI->Format(sBuffer2, sizeof(sBuffer2), "%s\\n%s %s\\n", iPlace == 11 ? NULL_STRING : "...", g_vecPhrases[std::string(sFrase)].c_str(), g_vecPhrases[std::string("You")].c_str());
-				// 	g_SMAPI->Format(sBuffer, sizeof(sBuffer), sBuffer2, iPlace, bPlaytime ? ((std::time(0) + g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME]) / 3600.0) : g_iPlayerInfo[iSlot].iStats[ST_EXP], engine->GetClientConVarValue(iSlot, "name"));
-				// 	ClientPrint(iSlot, 3, sBuffer);
-				// }
-				
 				g_pMenus->SetExitMenu(hMenu, true);
 				g_pMenus->SetBackMenu(hMenu, true);
 				g_pMenus->SetCallback(hMenu, TopMenuHandle);
@@ -771,7 +763,7 @@ void ResetCommand(const CCommandContext& context, const CCommand& args)
 
 				case 1:
 				{
-					g_SMAPI->Format(sBuffer, sizeof(sBuffer), "UPDATE `%s` SET `value` = %i, `rank` = 0;", g_sTableName, g_Settings[LR_TypeStatistics] ? 1000 : 0);
+					g_SMAPI->Format(sBuffer, sizeof(sBuffer), "UPDATE `%s` SET `value` = %i, `rank` = 0;", g_sTableName, g_Settings[LR_TypeStatistics] ? 1000 : g_Settings[LR_StartPoints]);
 					break;
 				}
 
@@ -1093,9 +1085,6 @@ void OnPlayerDeathEvent(const char* sName, IGameEvent* event, bool bDontBroadcas
 		iAttacker = event->GetInt("attacker"),
 		iAssister = event->GetInt("assister");
 
-	CBasePlayerController* pPlayerClient = static_cast<CBasePlayerController*>(event->GetPlayerController("userid"));
-	CBasePlayerController* pPlayerAttacker = static_cast<CBasePlayerController*>(event->GetPlayerController("attacker"));
-	CBasePlayerController* pPlayerAssister = static_cast<CBasePlayerController*>(event->GetPlayerController("assister"));
 	if(iAssister < 64 && NotifClient(iAssister, g_SettingsStats[LR_ExpGiveAssist], "AssisterKill"))
 	{
 		g_iPlayerInfo[iAssister].iStats[ST_ASSISTS]++;
@@ -1103,13 +1092,25 @@ void OnPlayerDeathEvent(const char* sName, IGameEvent* event, bool bDontBroadcas
 	}
 
 
-	if(iAttacker < 64 && iClient < 64)
+	if(iAttacker >= 0 && iAttacker < 64 && iClient >= 0 && iClient < 64)
 	{
-		if(iAttacker == iClient && pPlayerClient->m_hPawn())
-			NotifClient(iClient, -g_SettingsStats[LR_ExpGiveSuicide], "Suicide");
+		if(iAttacker == iClient)
+		{
+			if(!g_pPlayers->IsFakeClient(iClient))
+				NotifClient(iClient, -g_SettingsStats[LR_ExpGiveSuicide], "Suicide");
+		}
 		else
 		{
-			if(!g_Settings[LR_AllAgainstAll] && pPlayerClient->m_iTeamNum() == pPlayerAttacker->m_iTeamNum())
+			CCSPlayerController* pVictim = CCSPlayerController::FromSlot(iClient);
+			if(!pVictim) return;
+			CCSPlayerPawn* pVictimPawn = pVictim->GetPlayerPawn();
+			if(!pVictimPawn) return;
+			CCSPlayerController* pAttacker = CCSPlayerController::FromSlot(iAttacker);
+			if(!pAttacker) return;
+			CCSPlayerPawn* pAttackerPawn = pAttacker->GetPlayerPawn();
+			if(!pAttackerPawn) return;
+
+			if(!g_Settings[LR_AllAgainstAll] && pVictimPawn->GetTeam() == pAttackerPawn->GetTeam())
 			{
 				NotifClient(iAttacker, -g_SettingsStats[LR_ExpGiveTeamKill], "TeamKill");
 			}
@@ -1117,8 +1118,8 @@ void OnPlayerDeathEvent(const char* sName, IGameEvent* event, bool bDontBroadcas
 			{
 				int iExpAttacker = 0, iExpVictim = 0;
 
-				bool bFakeClient = pPlayerClient->m_steamID() <= 0 || !g_iPlayerInfo[iClient].bInitialized;
-				bool bFakeAttacker = pPlayerAttacker->m_steamID() <= 0 || !g_iPlayerInfo[iAttacker].bInitialized;
+				bool bFakeClient = g_pPlayers->IsFakeClient(iClient) || !g_iPlayerInfo[iClient].bInitialized;
+				bool bFakeAttacker = g_pPlayers->IsFakeClient(iAttacker) || !g_iPlayerInfo[iAttacker].bInitialized;
 
 				if(!g_Settings[LR_TypeStatistics])
 				{
@@ -1220,10 +1221,8 @@ void OnBombEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 
 void StartupServer()
 {
-
 	g_pGameEntitySystem = GameEntitySystem();
 	g_pEntitySystem = g_pUtils->GetCEntitySystem();
-	
 
 	static bool bDone = false;
 	if (!bDone)
@@ -1303,26 +1302,8 @@ void LR::AllPluginsLoaded()
 {
 	char error[64] = { 0 };
 	int ret;
-	g_pMysqlClient = ((ISQLInterface *)g_SMAPI->MetaFactory(SQLMM_INTERFACE, &ret, nullptr))->GetMySQLClient();
-
-	if (ret == META_IFACE_FAILED) {
-		V_strncpy(error, "Missing MYSQL plugin", sizeof(error));
-		return;
-	}
-
-	g_pMenus = (IMenusApi *)g_SMAPI->MetaFactory(Menus_INTERFACE, &ret, NULL);
-
-	if (ret == META_IFACE_FAILED)
-	{
-		V_strncpy(error, "Missing Menus system plugin", 64);
-		ConColorMsg(Color(255, 0, 0, 255), "[%s] %s\n", GetLogTag(), error);
-		std::string sBuffer = "meta unload "+std::to_string(g_PLID);
-		engine->ServerCommand(sBuffer.c_str());
-		return;
-	}
 
 	g_pUtils = (IUtilsApi *)g_SMAPI->MetaFactory(Utils_INTERFACE, &ret, NULL);
-
 	if (ret == META_IFACE_FAILED)
 	{
 		V_strncpy(error, "Missing Utils system plugin", 64);
@@ -1331,6 +1312,34 @@ void LR::AllPluginsLoaded()
 		engine->ServerCommand(sBuffer.c_str());
 		return;
 	}
+
+	g_pMenus = (IMenusApi *)g_SMAPI->MetaFactory(Menus_INTERFACE, &ret, NULL);
+	if (ret == META_IFACE_FAILED)
+	{
+		g_pUtils->ErrorLog("[%s] Missing Utils plugin", GetLogTag());
+		std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+		engine->ServerCommand(sBuffer.c_str());
+		return;
+	}
+
+	g_pPlayers = (IPlayersApi *)g_SMAPI->MetaFactory(PLAYERS_INTERFACE, &ret, NULL);
+	if (ret == META_IFACE_FAILED)
+	{
+		g_pUtils->ErrorLog("[%s] Missing Utils plugin", GetLogTag());
+		std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+		engine->ServerCommand(sBuffer.c_str());
+		return;
+	}
+	ISQLInterface* pSqlInterface = (ISQLInterface *)g_SMAPI->MetaFactory(SQLMM_INTERFACE, &ret, nullptr);
+
+	if (ret == META_IFACE_FAILED)
+	{
+		g_pUtils->ErrorLog("[%s] Missing SQL plugin", GetLogTag());
+		std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+		engine->ServerCommand(sBuffer.c_str());
+		return;
+	}
+	g_pMysqlClient = pSqlInterface->GetMySQLClient();
 
 	g_pUtils->StartupServer(g_PLID, StartupServer);
 	g_pUtils->OnGetGameRules(g_PLID, GetGameRules);
@@ -1341,7 +1350,9 @@ void LR::AllPluginsLoaded()
 
 		if (!g_kvPhrases->LoadFromFile(g_pFullFileSystem, pszPath))
 		{
-			Warning("Failed to load %s\n", pszPath);
+			g_pUtils->ErrorLog("[%s] Failed to load %s", GetLogTag(), pszPath);
+			std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+			engine->ServerCommand(sBuffer.c_str());
 			return;
 		}
 
@@ -1354,7 +1365,9 @@ void LR::AllPluginsLoaded()
 
 		if (!g_kvPhrasesRanks->LoadFromFile(g_pFullFileSystem, pszPath2))
 		{
-			Warning("Failed to load %s\n", pszPath2);
+			g_pUtils->ErrorLog("[%s] Failed to load %s", GetLogTag(), pszPath2);
+			std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+			engine->ServerCommand(sBuffer.c_str());
 			return;
 		}
 
@@ -1367,11 +1380,14 @@ void LR::AllPluginsLoaded()
 		KeyValues::AutoDelete autoDelete(pKVConfig);
 
 		if (!pKVConfig->LoadFromFile(g_pFullFileSystem, "addons/configs/levels_ranks/settings.ini")) {
-			V_strncpy(error, "Failed to load levels ranks config 'addons/config/levels_ranks/settings.ini'", sizeof(error));
+			g_pUtils->ErrorLog("[%s] Failed to load levels ranks config 'addons/config/levels_ranks/settings.ini'", GetLogTag());
+			std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+			engine->ServerCommand(sBuffer.c_str());
 			return;
 		}
 		int iTypeStatistics;
 		KeyValues* pKVConfigMain = pKVConfig->FindKey("MainSettings", false);
+		if(pKVConfigMain)
 		{
 			g_SMAPI->Format(g_sTableName, sizeof(g_sTableName), pKVConfigMain->GetString("lr_table", "lvl_base"));
 			g_SMAPI->Format(g_sPluginTitle, sizeof(g_sPluginTitle), pKVConfigMain->GetString("lr_plugin_title"));
@@ -1410,12 +1426,26 @@ void LR::AllPluginsLoaded()
 			g_Settings[LR_TopCount] = pKVConfigMain->GetInt("lr_top_count", 0);
 			g_Settings[LR_StartPoints] = pKVConfigMain->GetInt("lr_start_points", 0);
 		}
+		else
+		{
+			g_pUtils->ErrorLog("[%s] Not found MainSettings in levels ranks config", GetLogTag());
+			std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+			engine->ServerCommand(sBuffer.c_str());
+			return;
+		}
 
 		switch(iTypeStatistics)
 		{
 			case 0:
 			{
 				pKVConfigMain = pKVConfig->FindKey("Funded_System", false);
+				if(!pKVConfigMain)
+				{
+					g_pUtils->ErrorLog("[%s] Not found Funded_System in levels ranks config", GetLogTag());
+					std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+					engine->ServerCommand(sBuffer.c_str());
+					return;
+				}
 
 				g_SettingsStats[LR_ExpKill] = pKVConfigMain->GetInt("lr_kill");
 				g_SettingsStats[LR_ExpKillIsBot] = pKVConfigMain->GetInt("lr_kill_is_bot");
@@ -1427,6 +1457,13 @@ void LR::AllPluginsLoaded()
 			case 1:
 			{
 				pKVConfigMain = pKVConfig->FindKey("Rating_Extended", false);
+				if(!pKVConfigMain)
+				{
+					g_pUtils->ErrorLog("[%s] Not found Rating_Extended in levels ranks config", GetLogTag());
+					std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+					engine->ServerCommand(sBuffer.c_str());
+					return;
+				}
 
 				float flKillCoefficient = pKVConfigMain->GetFloat("lr_killcoeff", 1.0);
 
@@ -1446,6 +1483,13 @@ void LR::AllPluginsLoaded()
 			case 2:
 			{
 				pKVConfigMain = pKVConfig->FindKey("Rating_Simple", false);
+				if(!pKVConfigMain)
+				{
+					g_pUtils->ErrorLog("[%s] Not found Rating_Simple in levels ranks config", GetLogTag());
+					std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+					engine->ServerCommand(sBuffer.c_str());
+					return;
+				}
 				break;
 			}
 		}
@@ -1468,6 +1512,7 @@ void LR::AllPluginsLoaded()
 		if(iTypeStatistics != 2)
 		{
 			pKVConfigMain = pKVConfig->FindKey("Special_Bonuses", false);
+			if(pKVConfigMain)
 			{
 				char sBuffer[64];
 				for(int i = 0; i != 10;)
@@ -1476,9 +1521,17 @@ void LR::AllPluginsLoaded()
 					g_iBonus[i++] = pKVConfigMain->GetInt(sBuffer, 0);
 				}
 			}
+			else
+			{
+				g_pUtils->ErrorLog("[%s] Not found Special_Bonuses in levels ranks config", GetLogTag());
+				std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+				engine->ServerCommand(sBuffer.c_str());
+				return;
+			}
 		}
 
 		pKVConfigMain = pKVConfig->FindKey("Ranks", false);
+		if(pKVConfigMain)
 		{
 			g_hRankNames.clear();
 			g_hRankExp.clear();
@@ -1489,19 +1542,28 @@ void LR::AllPluginsLoaded()
 				g_hRankExp.emplace_back(pValue->GetInt(nullptr));
 			}
 		}
+		else
+		{
+			g_pUtils->ErrorLog("[%s] Not found Ranks in levels ranks config", GetLogTag());
+			std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+			engine->ServerCommand(sBuffer.c_str());
+			return;
+		}
 	}
 	KeyValues* pKVConfig = new KeyValues("Databases");
 
 	if (!pKVConfig->LoadFromFile(g_pFullFileSystem, "addons/configs/databases.cfg")) {
-		V_strncpy(error, "Failed to load databases config 'addons/config/databases.cfg'", sizeof(error));
-		ConColorMsg(Color(255, 0, 0, 255), "[LR] %s\n", error);
+		g_pUtils->ErrorLog("[%s] Failed to load databases config 'addons/config/databases.cfg'", GetLogTag());
+		std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+		engine->ServerCommand(sBuffer.c_str());
 		return;
 	}
 
 	pKVConfig = pKVConfig->FindKey("levels_ranks", false);
 	if (!pKVConfig) {
-		g_SMAPI->Format(error, sizeof(error), "No databases.cfg 'levels_ranks'");
-		ConColorMsg(Color(255, 0, 0, 255), "[LR] %s\n", error);
+		g_pUtils->ErrorLog("[%s] Not found `levels_ranks` in databases config", GetLogTag());
+		std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+		engine->ServerCommand(sBuffer.c_str());
 		return;
 	}
 
@@ -1515,7 +1577,9 @@ void LR::AllPluginsLoaded()
 
 	g_pConnection->Connect([](bool connect) {
 		if (!connect) {
-			META_CONPRINT("Failed to connect the mysql database\n");
+			g_pUtils->ErrorLog("[%s] Failed to connect to the database", g_PLAPI->GetLogTag());
+			std::string sBuffer = "meta unload "+std::to_string(g_PLID);
+			engine->ServerCommand(sBuffer.c_str());
 		} else {
 			char szQuery[1024];
 			g_SMAPI->Format(szQuery, sizeof(szQuery), "CREATE TABLE IF NOT EXISTS `%s` \
@@ -1677,7 +1741,7 @@ const char* LR::GetLicense()
 
 const char* LR::GetVersion()
 {
-	return "1.1.1";
+	return "1.2";
 }
 
 const char* LR::GetDate()
