@@ -52,7 +52,8 @@ enum LR_SettingType
     LR_DB_Charset_Type,
     LR_TopCount,
 	LR_StartPoints,
-	LR_TypeStatistics
+	LR_TypeStatistics,
+	LR_OnlineID
 };
 
 enum LR_SettingStatsType

@@ -3,6 +3,17 @@
 #include <functional>
 #include <string>
 
+class CBaseEntity;
+class CBaseModelEntity;
+class CEntityInstance;
+class CEntityKeyValues;
+class CSteamID;
+class CGameEntitySystem;
+class CEntitySystem;
+class CGlobalVars;
+class IGameEvent;
+class IGameEventManager2;
+
 /////////////////////////////////////////////////////////////////
 ///////////////////////      PLAYERS     //////////////////////////
 /////////////////////////////////////////////////////////////////
@@ -28,6 +39,13 @@ public:
     virtual void Teleport(int iSlot, const Vector *position, const QAngle *angles, const Vector *velocity) = 0;
     virtual void Respawn(int iSlot) = 0;
     virtual void DropWeapon(int iSlot, CBaseEntity* pWeapon, Vector* pVecTarget = nullptr, Vector* pVelocity = nullptr) = 0;
+    virtual void SwitchTeam(int iSlot, int iNewTeam) = 0;
+    virtual const char* GetPlayerName(int iSlot) = 0;
+    virtual void SetPlayerName(int iSlot, const char* szName) = 0;
+    virtual void SetMoveType(int iSlot, MoveType_t moveType) = 0;
+    virtual void EmitSound(std::vector<int> vPlayers, CEntityIndex ent, std::string sound_name, int pitch, float volume) = 0;
+	virtual void EmitSound(int iSlot, CEntityIndex ent, std::string sound_name, int pitch, float volume) = 0;
+	virtual void StopSoundEvent(int iSlot, const char* sound_name) = 0;
 };
 
 /////////////////////////////////////////////////////////////////
@@ -40,11 +58,13 @@ class CTimer;
 #define Utils_INTERFACE "IUtilsApi"
 
 typedef std::function<bool(int iSlot, const char* szContent)> CommandCallback;
-typedef std::function<bool(int iSlot, const char* szContent, bool bMute)> CommandCallbackPost;
+typedef std::function<bool(int iSlot, const char* szContent, bool bTeam)> CommandCallbackPre;
+typedef std::function<bool(int iSlot, const char* szContent, bool bMute, bool bTeam)> CommandCallbackPost;
 typedef std::function<void(const char* szName, IGameEvent* pEvent, bool bDontBroadcast)> EventCallback;
 typedef std::function<void()> StartupCallback;
 typedef std::function<bool(int iSlot, CTakeDamageInfoContainer *&pInfoContainer)> OnTakeDamageCallback;
 typedef std::function<bool(int iSlot, CTakeDamageInfo &pInfo)> OnTakeDamagePreCallback;
+typedef std::function<bool(int iSlot)> OnHearingClientCallback;
 
 class IUtilsApi
 {
@@ -64,7 +84,7 @@ public:
     virtual void OnGetGameRules(SourceMM::PluginId id, StartupCallback fn) = 0;
 
     virtual void RegCommand(SourceMM::PluginId id, const std::vector<std::string> &console, const std::vector<std::string> &chat, const CommandCallback &callback) = 0;
-    virtual void AddChatListenerPre(SourceMM::PluginId id, CommandCallback callback) = 0;
+    virtual void AddChatListenerPre(SourceMM::PluginId id, CommandCallbackPre callback) = 0;
     virtual void AddChatListenerPost(SourceMM::PluginId id, CommandCallbackPost callback) = 0;
     virtual void HookEvent(SourceMM::PluginId id, const char* sName, EventCallback callback) = 0;
 
@@ -95,6 +115,7 @@ public:
     virtual void HookOnTakeDamagePre(SourceMM::PluginId id, OnTakeDamagePreCallback callback) = 0;
     virtual void CollisionRulesChanged(CBaseEntity* pEnt) = 0;
     virtual void TeleportEntity(CBaseEntity* pEnt, const Vector *position, const QAngle *angles, const Vector *velocity) = 0;
+    virtual void HookIsHearingClient(SourceMM::PluginId id, OnHearingClientCallback callback) = 0;
 };
 
 /////////////////////////////////////////////////////////////////
@@ -152,13 +173,14 @@ class IMenusApi
 {
 public:
 	virtual void AddItemMenu(Menu& hMenu, const char* sBack, const char* sText, int iType = 1) = 0;
-	virtual void DisplayPlayerMenu(Menu& hMenu, int iSlot, bool bClose = true) = 0;
+	virtual void DisplayPlayerMenu(Menu& hMenu, int iSlot, bool bClose = true, bool bReset = true) = 0;
 	virtual void SetExitMenu(Menu& hMenu, bool bExit) = 0;
 	virtual void SetBackMenu(Menu& hMenu, bool bBack) = 0;
 	virtual void SetTitleMenu(Menu& hMenu, const char* szTitle) = 0;
 	virtual void SetCallback(Menu& hMenu, MenuCallbackFunc func) = 0;
     virtual void ClosePlayerMenu(int iSlot) = 0;
     virtual std::string escapeString(const std::string& input) = 0;
+    virtual bool IsMenuOpen(int iSlot) = 0;
 };
 
 /////////////////////////////////////////////////////////////////

@@ -120,12 +120,13 @@
 	}
 	"ExpChange"
 	{
-		"en"		"%s - {GRAY}%i (%s)"
-		"ru"		"%s - {GRAY}%i (%s)"
-		"ua"		"%s - {GRAY}%i (%s)"
-		"chi"		"%s - {GRAY}%i (%s)"
-		"es"		"%s - {GRAY}%i (%s)"
-		"de"		"%s - {GRAY}%i (%s)"
+		"en"		"Exp. of the player {OLIVE}%s {WHITE}changed by {OLIVE}%i {WHITE}points (%s%i)"
+		"ru"		"Вы изменили опыт игрока {OLIVE}%s {WHITE}на {OLIVE}%i {WHITE}очков (%s%i)"
+		"ua"		"Ви змінили досвід гравця {OLIVE}%s {WHITE}на {OLIVE}%i {WHITE}поінтів (%s%i)"
+		"chi"		"玩家 {OLIVE}%s {WHITE}的经验值被更改为 {OLIVE}%i {WHITE}点 (%s%i)"
+		"es"		"Exp. del jugador {OLIVE}%s {WHITE}cambiado por {OLIVE}%i {WHITE}puntos (%s%i)"
+		"de"		"EP des Spielers {OLIVE}%s {WHITE}geändert um {OLIVE}%i {WHITE}Punkte (%s%i)"
+		"pt"		"Exp. do jogador {OLIVE}%s {WHITE}alterado por {OLIVE}%i {WHITE}pontos (%s%i)"
 	}
 	"MainMenu_MyStats"
 	{
@@ -289,13 +290,13 @@
 	}
 	"MyStatsResetCooldown"
 	{
-		"en"		"Reset My Stats\n    Cooldown: %02d h. %02 m. %02 sec."
-		"ru"		"Сбросить статистику\n    Доступно через: %02 ч. %02 м. %02 сек."
-		"ua"		"Скинути статистику\n    Доступно через: %02 г. %02 хв. %02 сек."
-		"chi"		"重置我的数据\n    剩余时间 %02 小时 %02 分 %02 秒"
-		"es"		"Resetear mis estadísticas\n    Queda: %02 h. %02 m. %02 seg."
-		"de"		"Meine Statistiken zurücksetzen\n    Abklingzeit: %02 s. %02 m. %02 sek."
-		"pt"		"Resetar meu Stats\n    Cooldown: %02 h. %02 m. %02 sec."
+		"en"		"Reset (Cooldown: %i h. %i m.)"
+		"ru"		"Сбросить (Доступно через: %i ч. %i м.)"
+		"ua"		"Скинути (Доступно через: %i г. %i хв.)"
+		"chi"		"重置我的数据 (剩余时间 %i 小时 %i 分)"
+		"es"		"Resetear (Queda: %i h. %i m.)"
+		"de"		"Meine (Abklingzeit: %i s. %i m.)"
+		"pt"		"Resetar (Cooldown: %i h. %i m.)"
 	}
 	"MyStatsResetInfoTitle"
 	{

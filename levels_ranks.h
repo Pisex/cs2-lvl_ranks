@@ -19,6 +19,7 @@
 #include "module.h"
 #include "include/mysql_mm.h"
 #include "include/lvl_ranks.h"
+#include "include/cookies.h"
 #include "include/menus.h"
 #include <map>
 #include <ctime>
