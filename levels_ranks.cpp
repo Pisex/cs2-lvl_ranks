@@ -419,6 +419,7 @@ void SaveDataPlayer(int iSlot, bool bDisconnect = false)
 		{
 			g_SMAPI->Format(szQuery, sizeof(szQuery), "UPDATE `%s` SET `online` = 0 WHERE `steam` = '%s';", g_sTableName, g_iPlayerInfo[iSlot].szAuth.c_str());
 			g_iPlayerInfo[iSlot] = g_iInfoNULL;
+			g_pConnection->Query(szQuery, [iSlot](ISQLQuery* test){});
 		}
 		else
 		{
@@ -454,6 +455,41 @@ LIMIT 1;", g_sTableName, g_iPlayerInfo[iSlot].iStats[ST_EXP], g_sTableName, iTim
 					g_pLRApi->SendOnPlayerPosInTopHook(iSlot, g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP], g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOPTIME]);
 				}
 			});
+		}
+	}
+}
+
+void CheckAllowStatistic(bool bRoundStart = false)
+{
+	int iPlayers = 0;
+
+	for (int i = 0; i < 64; i++)
+	{
+		CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(i);
+		if (pPlayerController && pPlayerController->m_steamID() > 0 && pPlayerController->m_iTeamNum() > 1 && pPlayerController->m_hPawn() && pPlayerController->m_hPlayerPawn())
+		{
+			iPlayers++;
+		}
+	}
+
+	bool bWarningMessage = iPlayers < g_Settings[LR_MinplayersCount];
+	
+	g_bAllowStatistic = !bWarningMessage && !(g_Settings[LR_BlockWarmup] && g_pGameRules->m_bWarmupPeriod());
+
+	if(g_Settings[LR_ShowSpawnMessage] && bRoundStart)
+	{
+		for (int i = 0; i < 64; i++)
+		{
+			CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(i);
+			if(pPlayerController && pPlayerController->m_steamID() > 0)
+			{
+				if(bWarningMessage)
+				{
+					ClientPrint(i, g_vecPhrases[std::string("RoundStartCheckCount")].c_str(), iPlayers, g_Settings[LR_MinplayersCount]);
+				}
+
+				ClientPrint(i, g_vecPhrases[std::string("RoundStartMessageRanks")].c_str());
+			}
 		}
 	}
 }
@@ -1234,7 +1270,8 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 			g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME] = std::time(0) - g_iPlayerInfo[iSlot].iStats[ST_PLAYTIME];
 			g_iPlayerInfo[iSlot].bInitialized = true;
 			char szQuery[512];
-			g_SMAPI->Format(szQuery, sizeof(szQuery), "UPDATE `%s` SET `online` = %i WHERE `steam` = '%s';", g_sTableName, g_Settings[LR_OnlineID], g_iPlayerInfo[iSlot].szAuth.c_str());
+			g_SMAPI->Format(szQuery, sizeof(szQuery), "UPDATE `%s` SET `online` = %i, `lastconnect` = %i WHERE `steam` = '%s';", g_sTableName, g_Settings[LR_OnlineID], std::time(0), g_iPlayerInfo[iSlot].szAuth.c_str());
+			g_pConnection->Query(szQuery, [iSlot, this](ISQLQuery* test){});
 			g_pLRApi->SendOnPlayerLoadedHook(iSlot, g_iPlayerInfo[iSlot].szAuth.c_str());
 		}
 		else
@@ -1258,6 +1295,8 @@ void LR::OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, ui
 			});
 		}
 	});
+
+	CheckAllowStatistic();
 }
 
 void GiveExpForStreakKills(int iSlot)
@@ -1355,37 +1394,7 @@ void OnRoundEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 {
 	if(sName[6] == 's')
 	{
-		int iPlayers = 0;
-
-		for (int i = 0; i < 64; i++)
-		{
-			CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(i);
-			if (pPlayerController && pPlayerController->m_steamID() > 0 && pPlayerController->m_iTeamNum() > 1 && pPlayerController->m_hPawn() && pPlayerController->m_hPlayerPawn())
-			{
-				iPlayers++;
-			}
-		}
-
-		bool bWarningMessage = iPlayers < g_Settings[LR_MinplayersCount];
-		
-		g_bAllowStatistic = !bWarningMessage && !(g_Settings[LR_BlockWarmup] && g_pGameRules->m_bWarmupPeriod());
-
-		if(g_Settings[LR_ShowSpawnMessage])
-		{
-			for (int i = 0; i < 64; i++)
-			{
-				CCSPlayerController* pPlayerController = CCSPlayerController::FromSlot(i);
-				if(pPlayerController && pPlayerController->m_steamID() > 0)
-				{
-					if(bWarningMessage)
-					{
-						ClientPrint(i, g_vecPhrases[std::string("RoundStartCheckCount")].c_str(), iPlayers, g_Settings[LR_MinplayersCount]);
-					}
-
-					ClientPrint(i, g_vecPhrases[std::string("RoundStartMessageRanks")].c_str());
-				}
-			}
-		}
+		CheckAllowStatistic(true);
 	}
 	else if(sName[6] == 'e')
 	{
@@ -1592,10 +1601,6 @@ void StartupServer()
 {
 	g_pGameEntitySystem = GameEntitySystem();
 	g_pEntitySystem = g_pUtils->GetCEntitySystem();
-
-	char szQuery[512];
-	g_SMAPI->Format(szQuery, sizeof(szQuery), "UPDATE `%s` SET `online` = 0 WHERE `lastconnect` < %i;", g_sTableName, std::time(0) - 3600);
-	g_pConnection->Query(szQuery, [](ISQLQuery* test){});
 
 	static bool bDone = false;
 	if (!bDone)
@@ -1825,6 +1830,9 @@ void LR::AllPluginsLoaded()
 				g_SMAPI->Format(szQuery, sizeof(szQuery), "ALTER TABLE `%s` MODIFY COLUMN `name` varchar(%i) CHARACTER SET '%s' COLLATE '%s%s' NOT NULL default '' AFTER `steam`;", g_sTableName, 128, sCharset, sCharset, sCharsetType);
 				g_pConnection->Query(szQuery, [](ISQLQuery* test) {});
 
+				g_SMAPI->Format(szQuery, sizeof(szQuery), "UPDATE `%s` SET `online` = 0 WHERE `online` = %i;", g_sTableName, g_Settings[LR_OnlineID]);
+				g_pConnection->Query(szQuery, [](ISQLQuery* test){});
+
 				g_pLRApi->SetActive(true);
 				g_pLRApi->SendCoreIsReady();
 			});
@@ -1938,7 +1946,7 @@ const char* LR::GetLicense()
 
 const char* LR::GetVersion()
 {
-	return "1.2.1";
+	return "1.2.2";
 }
 
 const char* LR::GetDate()
