@@ -156,8 +156,10 @@ void LoadConfig()
 
 			g_Settings[LR_ShowUsualMessage] = pKVConfigMain->GetInt("lr_show_usualmessage", 1);
 			g_Settings[LR_ShowSpawnMessage] = pKVConfigMain->GetInt("lr_show_spawnmessage", 1);
-			g_Settings[LR_ShowLevelUpMessage] = pKVConfigMain->GetInt("lr_show_levelup_message", 0);
-			g_Settings[LR_ShowLevelDownMessage] = pKVConfigMain->GetInt("lr_show_leveldown_message", 0);
+
+			g_Settings[LR_ShowAllLevelUpMessage] = pKVConfigMain->GetInt("lr_show_all_levelup_message", 0);
+			g_Settings[LR_ShowAllLevelDownMessage] = pKVConfigMain->GetInt("lr_show_all_leveldown_message", 0);
+
 			g_Settings[LR_ShowRankMessage] = pKVConfigMain->GetInt("lr_show_rankmessage", 1);
 			g_Settings[LR_ShowRankList] = pKVConfigMain->GetInt("lr_show_ranklist", 1);
 			g_Settings[LR_GiveExpRoundEnd] = pKVConfigMain->GetInt("lr_giveexp_roundend", 1);
@@ -170,6 +172,9 @@ void LoadConfig()
 			g_Settings[LR_TopCount] = pKVConfigMain->GetInt("lr_top_count", 0);
 			g_Settings[LR_StartPoints] = pKVConfigMain->GetInt("lr_start_points", 0);
 			g_Settings[LR_OnlineID] = pKVConfigMain->GetInt("lr_online_id", 1);
+
+			g_Settings[LR_ShowLevelUpMessage] = pKVConfigMain->GetInt("lr_show_levelup_message", 0);
+			g_Settings[LR_ShowLevelDownMessage] = pKVConfigMain->GetInt("lr_show_leveldown_message", 0);
 		}
 		else
 		{
@@ -523,9 +528,16 @@ void CheckRank(int iSlot, bool bActive = true)
 
 					g_SMAPI->Format(sRankName, sizeof(sRankName), "%s", g_vecPhrases[g_hRankNames[iRank ? iRank - 1 : iRank]].c_str());
 
-					ClientPrint(iSlot, g_vecPhrases[std::string(bIsUp ? "LevelUp" : "LevelDown")].c_str(), sRankName);
+					if(bIsUp && g_Settings[LR_ShowLevelUpMessage])
+					{
+						ClientPrint(iSlot, g_vecPhrases[std::string("LevelUp")].c_str(), sRankName);
+					}
+					else if(!bIsUp && g_Settings[LR_ShowLevelDownMessage])
+					{
+						ClientPrint(iSlot, g_vecPhrases[std::string("LevelDown")].c_str(), sRankName);
+					}
 
-					if(g_Settings[LR_ShowLevelUpMessage + !bIsUp])
+					if(g_Settings[LR_ShowAllLevelUpMessage + !bIsUp])
 					{
 						for (int i = 0; i < 64; i++)
 						{
@@ -1597,79 +1609,21 @@ void OnBombEvent(const char* sName, IGameEvent* event, bool bDontBroadcast)
 	}
 }
 
+void OnCleanDB()
+{
+	if(g_Settings[LR_CleanDB_Days])
+	{
+		char szQuery[256];
+		g_SMAPI->Format(szQuery, sizeof(szQuery), "UPDATE `%s` SET `lastconnect` = 0 WHERE `lastconnect` < %d AND `lastconnect`;", g_sTableName, std::time(0) - g_Settings[LR_CleanDB_Days] * 86400);
+		g_pConnection->Query(szQuery, [](ISQLQuery* test) {});
+	}
+}
+
 void StartupServer()
 {
 	g_pGameEntitySystem = GameEntitySystem();
 	g_pEntitySystem = g_pUtils->GetCEntitySystem();
-
-	static bool bDone = false;
-	if (!bDone)
-	{
-		
-		g_pUtils->HookEvent(g_PLID, "player_death", OnPlayerDeathEvent);
-
-		g_pUtils->HookEvent(g_PLID, "bomb_planted", OnBombEvent);
-		g_pUtils->HookEvent(g_PLID, "bomb_defused", OnBombEvent);
-		g_pUtils->HookEvent(g_PLID, "bomb_dropped", OnBombEvent);
-		g_pUtils->HookEvent(g_PLID, "bomb_pickup", 	OnBombEvent);
-		
-		g_pUtils->HookEvent(g_PLID, "round_start", 	OnRoundEvent);
-		g_pUtils->HookEvent(g_PLID, "round_end", 	OnRoundEvent);
-		g_pUtils->HookEvent(g_PLID, "round_mvp", 	OnRoundEvent);
-		
-		g_pUtils->HookEvent(g_PLID, "hostage_killed", 	OnHostageEvent);
-		g_pUtils->HookEvent(g_PLID, "hostage_rescued", 	OnHostageEvent);
-		
-		g_pUtils->HookEvent(g_PLID, "weapon_fire", 	OnOtherEvents);
-		g_pUtils->HookEvent(g_PLID, "player_hurt", 	OnOtherEvents);
-
-		g_pUtils->RegCommand(g_PLID, {"mm_lvl", "sm_lvl"}, {"!lvl", "lvl", "!дмд", "дмд"}, [](int iSlot, const char* szContent){
-			OnLRMenu(iSlot);
-			return false;
-		});
-
-		g_pUtils->RegCommand(g_PLID, {"mm_rank", "sm_rank"}, {"!rank", "rank", "!кфтл", "кфтл"}, [](int iSlot, const char* szContent){
-			int iKills = g_iPlayerInfo[iSlot].iStats[ST_KILLS],
-				iDeaths = g_iPlayerInfo[iSlot].iStats[ST_DEATHS];
-
-			float fKDR = iKills / (iDeaths ? float(iDeaths) : 1.0);
-
-			if(g_Settings[LR_ShowRankMessage])
-			{
-				int iPlaceInTop = g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP],
-					iExp = g_iPlayerInfo[iSlot].iStats[ST_EXP];
-
-				for (int i = 0; i < 64; i++)
-				{
-					if(CheckStatus(i)) 
-					{
-						ClientPrint(i, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), iPlaceInTop, g_iDBCountPlayers, iExp, iKills, iDeaths, fKDR);
-					}
-				}
-			}
-			else
-			{
-				ClientPrint(iSlot, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP], g_iDBCountPlayers, g_iPlayerInfo[iSlot].iStats[ST_EXP], iKills, iDeaths, fKDR);
-			}
-			return false;
-		});
-
-		g_pUtils->RegCommand(g_PLID, {"mm_session", "sm_session"}, {"!session", "session", "!ыуыышщт", "ыуыышщт"}, [](int iSlot, const char* szContent){
-			return false;
-		});
-
-		g_pUtils->RegCommand(g_PLID, {"mm_toptime", "sm_toptime"}, {"!toptime", "toptime", "!ещзешьу", "ещзешьу"}, [](int iSlot, const char* szContent){
-			OverAllTopPlayers(iSlot);
-			return false;
-		});
-
-		g_pUtils->RegCommand(g_PLID, {"mm_top", "sm_top"}, {"!top", "top", "!ещз", "ещз"}, [](int iSlot, const char* szContent){
-			OverAllTopPlayers(iSlot, false);
-			return false;
-		});
-
-		bDone = true;
-	}
+	OnCleanDB();
 }
 
 void LoadDataConfig()
@@ -1838,6 +1792,69 @@ void LR::AllPluginsLoaded()
 			});
 		}
 	});
+
+	
+	g_pUtils->HookEvent(g_PLID, "player_death", OnPlayerDeathEvent);
+
+	g_pUtils->HookEvent(g_PLID, "bomb_planted", OnBombEvent);
+	g_pUtils->HookEvent(g_PLID, "bomb_defused", OnBombEvent);
+	g_pUtils->HookEvent(g_PLID, "bomb_dropped", OnBombEvent);
+	g_pUtils->HookEvent(g_PLID, "bomb_pickup", 	OnBombEvent);
+	
+	g_pUtils->HookEvent(g_PLID, "round_start", 	OnRoundEvent);
+	g_pUtils->HookEvent(g_PLID, "round_end", 	OnRoundEvent);
+	g_pUtils->HookEvent(g_PLID, "round_mvp", 	OnRoundEvent);
+	
+	g_pUtils->HookEvent(g_PLID, "hostage_killed", 	OnHostageEvent);
+	g_pUtils->HookEvent(g_PLID, "hostage_rescued", 	OnHostageEvent);
+	
+	g_pUtils->HookEvent(g_PLID, "weapon_fire", 	OnOtherEvents);
+	g_pUtils->HookEvent(g_PLID, "player_hurt", 	OnOtherEvents);
+
+	g_pUtils->RegCommand(g_PLID, {"mm_lvl", "sm_lvl"}, {"!lvl", "lvl", "!дмд", "дмд"}, [](int iSlot, const char* szContent){
+		OnLRMenu(iSlot);
+		return false;
+	});
+
+	g_pUtils->RegCommand(g_PLID, {"mm_rank", "sm_rank"}, {"!rank", "rank", "!кфтл", "кфтл"}, [](int iSlot, const char* szContent){
+		int iKills = g_iPlayerInfo[iSlot].iStats[ST_KILLS],
+			iDeaths = g_iPlayerInfo[iSlot].iStats[ST_DEATHS];
+
+		float fKDR = iKills / (iDeaths ? float(iDeaths) : 1.0);
+
+		if(g_Settings[LR_ShowRankMessage])
+		{
+			int iPlaceInTop = g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP],
+				iExp = g_iPlayerInfo[iSlot].iStats[ST_EXP];
+
+			for (int i = 0; i < 64; i++)
+			{
+				if(CheckStatus(i)) 
+				{
+					ClientPrint(i, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), iPlaceInTop, g_iDBCountPlayers, iExp, iKills, iDeaths, fKDR);
+				}
+			}
+		}
+		else
+		{
+			ClientPrint(iSlot, g_vecPhrases[std::string("RankPlayer")].c_str(), engine->GetClientConVarValue(iSlot, "name"), g_iPlayerInfo[iSlot].iStats[ST_PLACEINTOP], g_iDBCountPlayers, g_iPlayerInfo[iSlot].iStats[ST_EXP], iKills, iDeaths, fKDR);
+		}
+		return false;
+	});
+
+	g_pUtils->RegCommand(g_PLID, {"mm_session", "sm_session"}, {"!session", "session", "!ыуыышщт", "ыуыышщт"}, [](int iSlot, const char* szContent){
+		return false;
+	});
+
+	g_pUtils->RegCommand(g_PLID, {"mm_toptime", "sm_toptime"}, {"!toptime", "toptime", "!ещзешьу", "ещзешьу"}, [](int iSlot, const char* szContent){
+		OverAllTopPlayers(iSlot);
+		return false;
+	});
+
+	g_pUtils->RegCommand(g_PLID, {"mm_top", "sm_top"}, {"!top", "top", "!ещз", "ещз"}, [](int iSlot, const char* szContent){
+		OverAllTopPlayers(iSlot, false);
+		return false;
+	});
 }
 
 void LRApi::ResetPlayerStats(int iSlot)
@@ -1946,7 +1963,7 @@ const char* LR::GetLicense()
 
 const char* LR::GetVersion()
 {
-	return "1.2.2";
+	return "1.2.3";
 }
 
 const char* LR::GetDate()

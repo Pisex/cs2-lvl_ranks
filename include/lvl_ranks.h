@@ -38,8 +38,8 @@ enum LR_SettingType
     LR_ResetMyStatsCooldown,
     LR_ShowUsualMessage,
     LR_ShowSpawnMessage,
-    LR_ShowLevelUpMessage,
-    LR_ShowLevelDownMessage,
+    LR_ShowAllLevelUpMessage,
+    LR_ShowAllLevelDownMessage,
     LR_ShowRankMessage,
     LR_GiveExpRoundEnd,
     LR_ShowRankList,
@@ -53,7 +53,9 @@ enum LR_SettingType
     LR_TopCount,
 	LR_StartPoints,
 	LR_TypeStatistics,
-	LR_OnlineID
+	LR_OnlineID,
+    LR_ShowLevelUpMessage,
+    LR_ShowLevelDownMessage
 };
 
 enum LR_SettingStatsType
