@@ -16,21 +16,23 @@
 	// 13) {PURPLE}
 	// 14) {LIGHTPURPLE}
     
-    "language"  "ru"
+    "language"  "en"
 
 	"Prefix"
 	{
-		"en"		" {RED}[LR]{WHITE}"
-		"ru"		" {RED}[LR]{WHITE}"
-		"ua"		" {RED}[LR]{WHITE}"
-		"chi"		" {RED}[LR]{WHITE}"
-		"es"		" {RED}[LR]{WHITE}"
-		"de"		" {RED}[LR]{WHITE}"
-		"pt"		" {RED}[LR]{WHITE}"
+		"en"		"[ {RED}LR {WHITE}]"
+		"pt-BR"		"[ {RED}LR {WHITE}]"
+		"ru"		"[ {RED}LR {WHITE}]"
+		"ua"		"[ {RED}LR {WHITE}]"
+		"chi"		"[ {RED}LR {WHITE}]"
+		"es"		"[ {RED}LR {WHITE}]"
+		"de"		"[ {RED}LR {WHITE}]"
+		"pt"		"[ {RED}LR {WHITE}]"
 	}
 	"MainMenuRank"
 	{
 		"en"		"Rank: %s"
+		"pt-BR"		"Rank: %s"
 		"ru"		"Звание: %s"
 		"ua"		"Звання: %s"
 		"chi"		"段位: %s"
@@ -41,6 +43,7 @@
 	"MainMenuExp"
 	{
 		"en"		"Exp: %s"
+		"pt-BR"		"Exp: %s"
 		"ru"		"Опыт: %s"
 		"ua"		"Досвід: %s"
 		"chi"		"经验值: %s"
@@ -51,6 +54,7 @@
 	"MainMenuPlace"
 	{
 		"en"		"Place: %i of %i"
+		"pt-BR"		"Posição: %i of %i"
 		"ru"		"Место: %i из %i"
 		"ua"		"Місце: %i из %i"
 		"chi"		"阶段: %i of %i"
@@ -61,16 +65,18 @@
 	"MainMenu_Admin"
 	{
 		"en"		"Admin's Panel"
+		"pt-BR"		"Painel Admin"
 		"ru"		"Панель Администратора"
 		"ua"		"Панель Адміністратора"
 		"chi"		"管理员菜单"
 		"es"		"Panel de admin"
 		"de"		"Admin Menü"
-		"pt"		"Painel Administrativo"
+		"pt"		"Painel Admin"
 	}
 	"ReloadAllConfigs"
 	{
 		"en"		"Reload plugin settings"
+		"pt-BR"		"Recarregar configurações do plugin"
 		"ru"		"Перезагрузить настройки плагина"
 		"ua"		"Перезавантажити налаштування плагіна"
 		"chi"		"重载设定"
@@ -81,6 +87,7 @@
 	"ConfigUpdated"
 	{
 		"en"		"Configuration settings updated"
+		"pt-BR"		"Configurações atualizada"
 		"ru"		"Конфигурационные настройки обновлены"
 		"ua"		"Конфігураційні налаштування оновлені"
 		"chi"		"设置已更新"
@@ -91,6 +98,7 @@
 	"GiveTakeMenuExp"
 	{
 		"en"		"Give/Take Exp. Points"
+		"pt-BR"		"Givar/Remover Pontos de Exp."
 		"ru"		"Выдать/Забрать очки опыта"
 		"ua"		"Видати/Забрати поінти досвіду"
 		"chi"		"给予/拿走 经验值. 点数"
@@ -101,6 +109,7 @@
 	"AdminGive"
 	{
 		"en"		"Your Exp: {GRAY}%i [%s from the admin]"
+		"pt-BR"		"Sua Exp: {GRAY}%i [%s do admin]"
 		"ru"		"Ваш опыт: {GRAY}%i [%s от Админа]"
 		"ua"		"Ваш досвід: {GRAY}%i [%s від Адміна]"
 		"chi"		"你的经验值: {GRAY}%i [管理员%s]"
@@ -111,6 +120,7 @@
 	"AdminTake"
 	{
 		"en"		"Your Exp: {GRAY}%i [%s from the admin]"
+		"pt-BR"		"Sua Exp: {GRAY}%i [%s do admin]"
 		"ru"		"Ваш опыт: {GRAY}%i [%s от Админа]"
 		"ua"		"Ваш досвід: {GRAY}%i [%s від Адміна]"
 		"chi"		"你的经验值: {GRAY}%i [管理员%s]"
@@ -121,6 +131,7 @@
 	"ExpChange"
 	{
 		"en"		"Exp. of the player {OLIVE}%s {WHITE}changed by {OLIVE}%i {WHITE}points (%s%i)"
+		"pt-BR"		"Exp. of the player {OLIVE}%s {WHITE}changed by {OLIVE}%i {WHITE}points (%s%i)"
 		"ru"		"Вы изменили опыт игрока {OLIVE}%s {WHITE}на {OLIVE}%i {WHITE}очков (%s%i)"
 		"ua"		"Ви змінили досвід гравця {OLIVE}%s {WHITE}на {OLIVE}%i {WHITE}поінтів (%s%i)"
 		"chi"		"玩家 {OLIVE}%s {WHITE}的经验值被更改为 {OLIVE}%i {WHITE}点 (%s%i)"
@@ -131,6 +142,7 @@
 	"MainMenu_MyStats"
 	{
 		"en"		"My Stats"
+		"pt-BR"		"Meu Stats"
 		"ru"		"Моя статистика"
 		"ua"		"Моя статистика"
 		"chi"		"我的数据"
@@ -141,6 +153,7 @@
 	"MyStatsInfoTitle"
 	{
 		"en"		"My Stats"
+		"pt-BR"		"Meu Stats"
 		"ru"		"Моя статистика"
 		"ua"		"Моя статистика"
 		"chi"		"我的数据"
@@ -151,6 +164,7 @@
 	"MyStatsInfoPlayed"
 	{
 		"en"		"Played: %02d h. %02d m. %02d sec."
+		"pt-BR"		"Jogou: %02d H. %02d Min. %02d Seg."
 		"ru"		"Сыграно: %02d ч. %02d м. %02d сек."
 		"ua"		"Зіграно: %02d г. %02d хв. %02d сек."
 		"chi"		"已游玩: %02d 小时 %02d 分 %02d 秒"
@@ -161,6 +175,7 @@
 	"MyStatsInfoKills"
 	{
 		"en"		"Kills: %i"
+		"pt-BR"		"Kills: %i"
 		"ru"		"Убийств: %i"
 		"ua"		"Вбивств: %i"
 		"chi"		"击杀: %i"
@@ -171,6 +186,7 @@
 	"MyStatsInfoDeaths"
 	{
 		"en"		"Deaths: %i"
+		"pt-BR"		"Deaths: %i"
 		"ru"		"Смертей: %i"
 		"ua"		"Смертей: %i"
 		"chi"		"死亡: %i"
@@ -181,6 +197,7 @@
 	"MyStatsInfoAssists"
 	{
 		"en"		"Assists: %i"
+		"pt-BR"		"Assists: %i"
 		"ru"		"Ассистов: %i"
 		"ua"		"Сприянь: %i"
 		"chi"		"助攻: %i"
@@ -191,6 +208,7 @@
 	"MyStatsInfoHeadshots"
 	{
 		"en"		"HeadShots: %i (%i%%)"
+		"pt-BR"		"HeadShots: %i (%i%%)"
 		"ru"		"Хедшотов: %i (%i%%)"
 		"ua"		"Хедшотів: %i (%i%%)"
 		"chi"		"爆头: %i (%i%%)"
@@ -201,6 +219,7 @@
 	"MyStatsInfoKDR"
 	{
 		"en"		"KDR: %.2f"
+		"pt-BR"		"KDR: %.2f"
 		"ru"		"KDR: %.2f"
 		"ua"		"KDR: %.2f"
 		"chi"		"K/D比: %.2f"
@@ -211,6 +230,7 @@
 	"MyStatsInfoAccuracy"
 	{
 		"en"		"Accuracy: %i%%"
+		"pt-BR"		"Accuracy: %i%%"
 		"ru"		"Точность: %i%%"
 		"ua"		"Влучність: %i%%"
 		"chi"		"精准度: %i%%"
@@ -221,6 +241,7 @@
 	"MyStatsInfoWinRate"
 	{
 		"en"		"WinRate: %i%%"
+		"pt-BR"		"WinRate: %i%%"
 		"ru"		"Винрейт: %i%%"
 		"ua"		"Вінрейт: %i%%"
 		"chi"		"胜率: %i%%"
@@ -231,6 +252,7 @@
 	"MyStatsSecondary"
 	{
 		"en"		"Secondary Stats"
+		"pt-BR"		"Stats Secundárias"
 		"ru"		"Дополнительная статистика"
 		"ua"		"Додаткова статистика"
 		"chi"		"其他统计"
@@ -241,6 +263,7 @@
 	"MyStatsSession"
 	{
 		"en"		"Session Data"
+		"pt-BR"		"Dados da Session"
 		"ru"		"Данные за сессию"
 		"ua"		"Дані за сесію"
 		"chi"		"当前数据, 会话数据"
@@ -251,6 +274,7 @@
 	"MyStatsSessionInfoTitle"
 	{
 		"en"		"Session data"
+		"pt-BR"		"Dados da Session"
 		"ru"		"Данные за сессию"
 		"ua"		"Дані за сесію"
 		"chi"		"当前数据, 会话数据"
@@ -261,6 +285,7 @@
 	"MyStatsSessionInfoExp"
 	{
 		"en"		"Exp. points: %s"
+		"pt-BR"		"Pontos de Exp.: %s"
 		"ru"		"Очки опыта: %s"
 		"ua"		"Поінти досвіду: %s"
 		"chi"		"经验值. 点数: %s"
@@ -271,6 +296,7 @@
 	"MyStatsSessionInfoPlace"
 	{
 		"en"		"Place: %s"
+		"pt-BR"		"Posição: %s"
 		"ru"		"Место в топе: %s"
 		"ua"		"Місце в топі: %s"
 		"chi"		"放置在顶部: %s"
@@ -281,6 +307,7 @@
 	"MyStatsReset"
 	{
 		"en"		"Reset My Stats"
+		"pt-BR"		"Resetar Meu Stats"
 		"ru"		"Сбросить статистику"
 		"ua"		"Скинути статистику"
 		"chi"		"重置我的数据"
@@ -291,6 +318,7 @@
 	"MyStatsResetCooldown"
 	{
 		"en"		"Reset (Cooldown: %i h. %i m.)"
+		"pt-BR"		"Resetar (Cooldown: %i H. %i Min.)"
 		"ru"		"Сбросить (Доступно через: %i ч. %i м.)"
 		"ua"		"Скинути (Доступно через: %i г. %i хв.)"
 		"chi"		"重置我的数据 (剩余时间 %i 小时 %i 分)"
@@ -301,6 +329,7 @@
 	"MyStatsResetInfoTitle"
 	{
 		"en"		"Reset the statistics?"
+		"pt-BR"		"Resetar estatísticas?"
 		"ru"		"Обнулить статистику?"
 		"ua"		"Скинути статистику?"
 		"chi"		"重置自己的数据?"
@@ -311,6 +340,7 @@
 	"MyStatsResetInfo1"
 	{
 		"en"		"You reset all your options,"
+		"pt-BR"		"Você resetara todas as suas configurações,"
 		"ru"		"Вы обнулите все свои параметры,"
 		"ua"		"Ви скинете всі свої параметри,"
 		"chi"		"你将重置你所有的选项,"
@@ -321,6 +351,7 @@
 	"MyStatsResetInfo2"
 	{
 		"en"		"levels, frags and the like."
+		"pt-BR"		"Levels, Kills e etc."
 		"ru"		"уровни, фраги и тому подобное."
 		"ua"		"Рівні, фраги тощо."
 		"chi"		"等级, 击杀 等等数据."
@@ -331,6 +362,7 @@
 	"MyStatsResetInfo3"
 	{
 		"en"		"You are sure?"
+		"pt-BR"		"Você tem certeza?"
 		"ru"		"Вы точно уверены?"
 		"ua"		"Ви точно впевнені?"
 		"chi"		"你确定?"
@@ -341,6 +373,7 @@
 	"MainMenu_MyPrivilegesSettings"
 	{
 		"en"		"Privileges & Settings"
+		"pt-BR"		"Privilégios & Configurações"
 		"ru"		"Привилегии и настройки"
 		"ua"		"Привілеї та налаштування"
 		"chi"		"权限和设置"
@@ -351,6 +384,7 @@
 	"MainMenu_TopPlayers"
 	{
 		"en"		"TOP Players"
+		"pt-BR"		"TOP Players"
 		"ru"		"TOP игроков"
 		"ua"		"TOP гравців"
 		"chi"		"顶尖选手"
@@ -360,16 +394,18 @@
 	"OverAllTopPlayersExp"
 	{
 		"en"		"TOP 10 | Exp. Points"
+		"pt-BR"		"TOP 10 | Pontos de Exp."
 		"ru"		"TOP 10 | по очкам опыта"
 		"ua"		"TOP 10 | за поінтами досвіду"
 		"chi"		"经验值排名前十"
-		"es"		"TOP 10 | por puntos Exp.."
+		"es"		"TOP 10 | por puntos Exp."
 		"de"		"TOP 10 | nach Erfahrungspunkten"
 		"pt"		"TOP 10 | Pontos Exp"
 	}
 	"OverAllTopPlayersExp_Slot"
 	{
 		"en"		"%i - [ %i ] - %s"
+		"pt-BR"		"%i - [ %i ] - %s"
 		"ru"		"%i - [ %i ] - %s"
 		"ua"		"%i - [ %i ] - %s"
 		"chi"		"%i - [ %i ] - %s"
@@ -379,6 +415,7 @@
 	"OverAllTopPlayersTime"
 	{
 		"en"		"TOP 10 | Activity"
+		"pt-BR"		"TOP 10 | Ativadade"
 		"ru"		"TOP 10 | по активности"
 		"ua"		"TOP 10 | за активністю"
 		"chi"		"活跃排名前十"
@@ -389,6 +426,7 @@
 	"OverAllTopPlayersTime_Slot"
 	{
 		"en"		"%i - [ %.1f h. ] - %s"
+		"pt-BR"		"%i - [ %.1f H. ] - %s"
 		"ru"		"%i - [ %.1f ч. ] - %s"
 		"ua"		"%i - [ %.1f г. ] - %s"
 		"chi"		"%i - [ %.1f 小时 ] - %s"
@@ -398,6 +436,7 @@
 	"You"
 	{
 		"en"		"(You)"
+		"pt-BR"		"(Você)"
 		"ru"		"(Вы)"
 		"ua"		"(Ви)"
 		"chi"		"(你)"
@@ -408,26 +447,29 @@
 	"NoData"
 	{
 		"en"		"No data!"
+		"pt-BR"		"Sem dados!"
 		"ru"		"Нет данных!"
 		"ua"		"Немає даних!"
-		"chi"		"无数据."
-		"es"		"Sin datos."
+		"chi"		"无数据!"
+		"es"		"Sin datos!"
 		"de"		"Keine Daten!"
 		"pt"		"Sem dados!"
 	}
 	"MainMenu_Ranks"
 	{
 		"en"		"All Ranks"
+		"pt-BR"		"Todos Ranks"
 		"ru"		"Все ранги"
 		"ua"		"Всі ранги"
 		"chi"		"全部段位"
 		"es"		"Todos los rangos"
 		"de"		"Alle Ränge"
-		"pt"		"All Ranks"
+		"pt"		"Todos Ranks"
 	}
 	"RankPlayer"
 	{
 		"en"		"Player {GREEN}%s {WHITE}is ranked at {GREEN}%i / %i {WHITE}with {OLIVE}%i {WHITE}Exp, {OLIVE}%i {WHITE}Kills, {OLIVE}%i {WHITE}Deaths and KDR {OLIVE}%.2f"
+		"pt-BR"		"Player {GREEN}%s {WHITE}is ranked at {GREEN}%i / %i {WHITE}with {OLIVE}%i {WHITE}Exp, {OLIVE}%i {WHITE}Kills, {OLIVE}%i {WHITE}Deaths and KDR {OLIVE}%.2f"
 		"ru"		"Игрок {GREEN}%s {WHITE}на {GREEN}%i / %i {WHITE}месте, с {OLIVE}%i {WHITE}очками, {OLIVE}%i {WHITE}убийствами, {OLIVE}%i {WHITE}смертями и KDR {OLIVE}%.2f"
 		"ua"		"Гравець {GREEN}%s {WHITE}на {GREEN}%i / %i {WHITE}місці, з {OLIVE}%i {WHITE}поінтами, {OLIVE}%i {WHITE}вбивствами, {OLIVE}%i {WHITE}смертями і KDR {OLIVE}%.2f"
 		"chi"		"玩家 {GREEN}%s {WHITE}的段位在 {GREEN}%i / %i {WHITE}共获得 {OLIVE}%i {WHITE}点经验者, {OLIVE}%i {WHITE}击杀, {OLIVE}%i {WHITE}死亡 & K/D比是 {OLIVE}%.2f"
@@ -438,6 +480,7 @@
 	"PlayerDataDeleted"
 	{
 		"en"		"Deletion request sent successfully! STEAM_ID - %s"
+		"pt-BR"		"Solicitação de exclusão enviada com sucesso! STEAM_ID - %s"
 		"ru"		"Запрос на удаление игрока прошел успешно! STEAM_ID - %s"
 		"ua"		"Запит на видалення гравця пройшов успішно! STEAM_ID - %s"
 		"chi"		"删除请求已成功发送! STEAM_ID - %s"
@@ -448,6 +491,7 @@
 	"RoundStartCheckCount"
 	{
 		"en"		"There are only {RED}%i {WHITE}players from {RED}%i"
+		"pt-BR"		"There are only {RED}%i {WHITE}players from {RED}%i"
 		"ru"		"Присутствует только {RED}%i {WHITE}игрока из {RED}%i"
 		"ua"		"Присутні тільки {RED}%i {WHITE}гравця з {RED}%i"
 		"chi"		"这里只有 {RED}%i {WHITE}名玩家 来自 {RED}%i"
@@ -458,6 +502,7 @@
 	"RoundStartMessageRanks"
 	{
 		"en"		"Enter: {PURPLE}!lvl {WHITE}- Main Menu"
+		"pt-BR"		"Digite: {PURPLE}!lvl {WHITE}- Menu Principal"
 		"ru"		"Введи: {PURPLE}!lvl {WHITE}- главное меню"
 		"ua"		"Введи: {PURPLE}!lvl {WHITE}- головне меню"
 		"chi"		"输入: {PURPLE}!lvl {WHITE}- 打开主菜单"
@@ -468,6 +513,7 @@
 	"LevelUp"
 	{
 		"en"		"Your rank has been promoted to {LIME}%s"
+		"pt-BR"		"Seu rank subiu para {LIME}%s"
 		"ru"		"Вы повышены в звании до {LIME}%s"
 		"ua"		"Звання підвищено до {LIME}%s"
 		"chi"		"你的段位已经升级为 {LIME}%s"
@@ -478,6 +524,7 @@
 	"LevelDown"
 	{
 		"en"		"Your rank has been lowered to {RED}%s"
+		"pt-BR"		"Seu rank caiu para {RED}%s"
 		"ru"		"Вы понижены в звании до {RED}%s"
 		"ua"		"Звання знижено до {RED}%s"
 		"chi"		"你的段位已经降级为 {LIME}%s"
@@ -488,6 +535,7 @@
 	"LevelUpAll"
 	{
 		"en"		"Player {OLIVE}%s {WHITE}raised his rank to {LIME}%s"
+		"pt-BR"		"Player {OLIVE}%s {WHITE}raised his rank to {LIME}%s"
 		"ru"		"Игрок {OLIVE}%s {WHITE}повысил свое звание до {LIME}%s"
 		"ua"		"Гравець {OLIVE}%s {WHITE}підвищив своє звання до {LIME}%s"
 		"chi"		"玩家 {OLIVE}%s {WHITE}升段到了 {LIME}%s"
@@ -498,6 +546,7 @@
 	"LevelDownAll"
 	{
 		"en"		"Player {OLIVE}%s {WHITE}lowered his rank to {RED}%s"
+		"pt-BR"		"Player {OLIVE}%s {WHITE}lowered his rank to {RED}%s"
 		"ru"		"Игрок {OLIVE}%s {WHITE}понизил свое звание до {RED}%s"
 		"ua"		"Гравець {OLIVE}%s {WHITE}знизив своє звання до {RED}%s"
 		"chi"		"玩家 {OLIVE}%s {WHITE}掉段到了 {LIME}%s"
@@ -508,6 +557,7 @@
 	"Suicide"
 	{
 		"en"		"Your Exp.: {RED}%i [%s for Suicide]"
+		"pt-BR"		"Sua Exp.: {RED}%i [%s por Suicide]"
 		"ru"		"Ваш опыт: {RED}%i [%s за самоубийство]"
 		"ua"		"Ваш досвід: {RED}%i [%s за самогубство]"
 		"chi"		"你的经验值: {RED}%i [%s 因为自杀]"
@@ -518,6 +568,7 @@
 	"Kill"
 	{
 		"en"		"Your Exp.: {GREEN}%i [%s for Kill]"
+		"pt-BR"		"Sua Exp.: {GREEN}%i [%s por Kill]"
 		"ru"		"Ваш опыт: {GREEN}%i [%s за убийство]"
 		"ua"		"Ваш досвід: {GREEN}%i [%s за самогубство]"
 		"chi"		"你的经验值: {GREEN}%i [%s 来自击杀]"
@@ -528,6 +579,7 @@
 	"MyDeath"
 	{
 		"en"		"Your Exp.: {RED}%i [%s for Dying]"
+		"pt-BR"		"Sua Exp.: {RED}%i [%s por Dying]"
 		"ru"		"Ваш опыт: {RED}%i [%s за вашу смерть]"
 		"ua"		"Ваш досвід: {RED}%i [%s за вашу смерть]"
 		"chi"		"你的经验值: {RED}%i [%s 因为死亡]"
@@ -538,6 +590,7 @@
 	"TeamKill"
 	{
 		"en"		"Your Exp.: {RED}%i [%s for Team Kill]"
+		"pt-BR"		"Sua Exp.: {RED}%i [%s por matar o time]"
 		"ru"		"Ваш опыт: {RED}%i [%s за убийство товарища]"
 		"ua"		"Ваш досвід: {RED}%i [%s за вбивство товариша]"
 		"chi"		"你的经验值: {RED}%i [%s 因为击杀队友]"
@@ -548,6 +601,7 @@
 	"HeadShotKill"
 	{
 		"en"		"Your Exp.: {OLIVE}%i [%s for a HeadShot]"
+		"pt-BR"		"Sua Exp.: {OLIVE}%i [%s por um HeadShot]"
 		"ru"		"Ваш опыт: {OLIVE}%i [%s за убийство в голову]"
 		"ua"		"Ваш досвід: {OLIVE}%i [%s за вбивство в голову]"
 		"chi"		"你的经验值: {OLIVE}%i [%s 来自爆头]"
@@ -558,6 +612,7 @@
 	"AssisterKill"
 	{
 		"en"		"Your Exp.: {BLUE}%i [%s for an Assistance]"
+		"pt-BR"		"Sua Exp.: {BLUE}%i [%s por uma Assistance]"
 		"ru"		"Ваш опыт: {BLUE}%i [%s за помощь в убийстве]"
 		"ua"		"Ваш досвід: {BLUE}%i [%s за допомогу в убивстві]"
 		"chi"		"你的经验值: {BLUE}%i [%s 来自助攻]"
@@ -568,6 +623,7 @@
 	"RoundWin"
 	{
 		"en"		"Your Exp.: {GREEN}%i [%s your Team Won]"
+		"pt-BR"		"Sua Exp.: {GREEN}%i [%s seu time ganhou]"
 		"ru"		"Ваш опыт: {GREEN}%i [%s ваша команда выиграла]"
 		"ua"		"Ваш досвід: {GREEN}%i [%s ваша команда виграла]"
 		"chi"		"你的经验值: {GREEN}%i [%s 来自团队胜利]"
@@ -578,6 +634,7 @@
 	"RoundLose"
 	{
 		"en"		"Your Exp.: {RED}%i [%s your Team Lost]"
+		"pt-BR"		"Sua Exp.: {RED}%i [%s seu time perdeu]"
 		"ru"		"Ваш опыт: {RED}%i [%s ваша команда проиграла]"
 		"ua"		"Ваш досвід: {RED}%i [%s ваша команда програла]"
 		"chi"		"你的经验值: {RED}%i [%s 因为团队失败]"
@@ -588,6 +645,7 @@
 	"RoundMVP"
 	{
 		"en"		"Your Exp.: {BLUE}%i [%s MVP]"
+		"pt-BR"		"Sua Exp.: {BLUE}%i [%s MVP]"
 		"ru"		"Ваш опыт: {BLUE}%i [%s MVP]"
 		"ua"		"Ваш досвід: {BLUE}%i [%s MVP]"
 		"chi"		"你的经验值: {BLUE}%i [%s MVP]"
@@ -598,6 +656,7 @@
 	"BombPlanted"
 	{
 		"en"		"Your Exp.: {LIME}%i [%s for Planting the Bomb]"
+		"pt-BR"		"Sua Exp.: {LIME}%i [%s por Plantar C4]"
 		"ru"		"Ваш опыт: {LIME}%i [%s установка бомбы]"
 		"ua"		"Ваш досвід: {LIME}%i [%s установка бомби]"
 		"chi"		"你的经验值: {LIME}%i [%s 来自安装炸弹]"
@@ -608,6 +667,7 @@
 	"BombDefused"
 	{
 		"en"		"Your Exp.: {LIME}%i [%s for Defusing the Bomb]"
+		"pt-BR"		"Sua Exp.: {LIME}%i [%s por Defusar C4]"
 		"ru"		"Ваш опыт: {LIME}%i [%s разминирование бомбы]"
 		"ua"		"Ваш досвід: {LIME}%i [%s розмінування бомби]"
 		"chi"		"你的经验值: {LIME}%i [%s 来自拆除炸弹]"
@@ -618,6 +678,7 @@
 	"BombPickup"
 	{
 		"en"		"Your Exp.: {GREEN}%i [%s for Bomb Pickup]"
+		"pt-BR"		"Sua Exp.: {GREEN}%i [%s por Pegar C4]"
 		"ru"		"Ваш опыт: {GREEN}%i [%s подобрали бомбу]"
 		"ua"		"Ваш досвід: {GREEN}%i [%s підібрали бомбу]"
 		"chi"		"你的经验值: {GREEN}%i [%s 来自捡起炸弹]"
@@ -628,6 +689,7 @@
 	"BombDropped"
 	{
 		"en"		"Your Exp.: {RED}%i [%s for Dropping the Bomb]"
+		"pt-BR"		"Sua Exp.: {RED}%i [%s por Dropar C4]"
 		"ru"		"Ваш опыт: {RED}%i [%s потеряли бомбу]"
 		"ua"		"Ваш досвід: {RED}%i [%s втратили бомбу]"
 		"chi"		"你的经验值: {RED}%i [%s 因为掉落炸弹]"
@@ -638,6 +700,7 @@
 	"HostageRescued"
 	{
 		"en"		"Your Exp.: {LIGHTBLUE}%i [%s you rescued the Hostage]"
+		"pt-BR"		"Sua Exp.: {LIGHTBLUE}%i [%s você resgatou o Refém]"
 		"ru"		"Ваш опыт: {LIGHTBLUE}%i [%s вы спасли заложника]"
 		"ua"		"Ваш досвід: {LIGHTBLUE}%i [%s ви врятували заручника]"
 		"chi"		"你的经验值: {LIGHTBLUE}%i [%s 来自人质救援]"
@@ -648,6 +711,7 @@
 	"HostageKilled"
 	{
 		"en"		"Your Exp.: {RED}%i [%s you killed the Hostage]"
+		"pt-BR"		"Sua Exp.: {RED}%i [%s você matou o Refém]"
 		"ru"		"Ваш опыт: {RED}%i [%s вы убили заложника]"
 		"ua"		"Ваш досвід: {RED}%i [%s ви вбили заручника]"
 		"chi"		"你的经验值: {RED}%i [%s 因为击杀人质]"
@@ -658,6 +722,7 @@
 	"DoubleKill"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for DoubleKill]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por DoubleKill]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за DoubleKill]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за DoubleKill]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自双杀]"
@@ -668,6 +733,7 @@
 	"TripleKill"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for TripleKill]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por TripleKill]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за TripleKill]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за TripleKill]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自三杀]"
@@ -678,6 +744,7 @@
 	"Domination"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for Domination]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por Domination]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за Domination]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за Domination]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自Domination]"
@@ -688,6 +755,7 @@
 	"Rampage"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for Rampage]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por Rampage]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за Rampage]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за Rampage]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自Rampage]"
@@ -698,6 +766,7 @@
 	"MegaKill"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for MegaKill]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por MegaKill]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за MegaKill]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за MegaKill]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自MegaKill]"
@@ -708,6 +777,7 @@
 	"Ownage"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for Ownage]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por Ownage]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за Ownage]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за Ownage]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自Ownage]"
@@ -717,6 +787,7 @@
 	"UltraKill"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for UltraKill]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por UltraKill]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за UltraKill]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за UltraKill]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自UltraKill]"
@@ -727,6 +798,7 @@
 	"KillingSpree"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for Killing Spree]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por Killing Spree]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за Killing Spree]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за Killing Spree]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自Killing Spree]"
@@ -737,6 +809,7 @@
 	"MonsterKill"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for MonsterKill]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por MonsterKill]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за MonsterKill]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за MonsterKill]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自MonsterKill]"
@@ -747,6 +820,7 @@
 	"Unstoppable"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for Unstoppable]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por Unstoppable]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за Unstoppable]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за Unstoppable]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自Unstoppable]"
@@ -757,6 +831,7 @@
 	"GodLike"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for God Like]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por God Like]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за God Like]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за God Like]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自God Like]"
@@ -767,6 +842,7 @@
 	"WickedSick"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for WickedSick]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por WickedSick]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за WickedSick]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за WickedSick]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自WickedSick]"
@@ -777,6 +853,7 @@
 	"HolyShit"
 	{
 		"en"		"Your Exp.: {PURPLE}%i [%s for HolyShit]"
+		"pt-BR"		"Sua Exp.: {PURPLE}%i [%s por HolyShit]"
 		"ru"		"Ваш опыт: {PURPLE}%i [%s за HolyShit]"
 		"ua"		"Ваш досвід: {PURPLE}%i [%s за HolyShit]"
 		"chi"		"你的经验值: {PURPLE}%i [%s 来自HolyShit]"
@@ -787,6 +864,7 @@
 	"RoundExpResultGive"
 	{
 		"en"		"You earned {GREEN}%i {WHITE}Exp. Points per round."
+		"pt-BR"		"You earned {GREEN}%i {WHITE}Exp. Points per round."
 		"ru"		"За раунд вы заработали {GREEN}%i {WHITE}очков опыта."
 		"ua"		"За раунд ви заробили {GREEN}%i {WHITE}поінтів досвіду."
 		"chi"		"你每回合可获得 {GREEN}%i {WHITE}点经验值."
@@ -797,6 +875,7 @@
 	"RoundExpResultTake"
 	{
 		"en"		"You lost {RED}%i {WHITE}Exp. Points per round."
+		"pt-BR"		"You lost {RED}%i {WHITE}Exp. Points per round."
 		"ru"		"За раунд вы потеряли {RED}%i {WHITE}очков опыта."
 		"ua"		"За раунд ви втратили {RED}%i {WHITE}поінти досвіду."
 		"chi"		"你每回合将失去 {RED}%i {WHITE}点经验值."
@@ -807,6 +886,7 @@
 	"RoundExpResultNothing"
 	{
 		"en"		"You didn’t earn Exp. Points in a round!"
+		"pt-BR"		"Você não ganhou Pontos de Exp. neste round!"
 		"ru"		"За раунд вы не заработали очков опыта!"
 		"ua"		"За раунд ви не заробили поінтів досвіду!"
 		"chi"		"你在这回合并没有获得任何经验值!"
@@ -817,6 +897,7 @@
 	"RoundExpResultAll"
 	{
 		"en"		"Total: {PURPLE}%i {WHITE}Exp. Points"
+		"pt-BR"		"Total: {PURPLE}%i {WHITE}Pontos de Exp."
 		"ru"		"Всего: {PURPLE}%i {WHITE}очков опыта"
 		"ua"		"Всього: {PURPLE}%i {WHITE}поінтів досвіду"
 		"chi"		"总共: {PURPLE}%i {WHITE}经验值. 点数"
@@ -827,6 +908,7 @@
 	"Yes"
 	{
 		"en"		"Yes"
+		"pt-BR"		"Sim"
 		"ru"		"Да"
 		"ua"		"Так"
 		"chi"		"是"
@@ -834,10 +916,10 @@
 		"de"		"Ja"
 		"pt"		"Sim"
 	}
-	
 	"No"
 	{
 		"en"		"No"
+		"pt-BR"		"Não"
 		"ru"		"Нет"
 		"ua"		"Ні"
 		"chi"		"否"

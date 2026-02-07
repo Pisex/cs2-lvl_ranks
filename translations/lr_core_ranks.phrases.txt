@@ -17,11 +17,12 @@
 	//	}
 	//
     
-    "language"  "ru"
+    "language"  "en"
 
 	"rank_1"
 	{
 		"en"		"Silver I"
+		"pt-BR"		"Silver I"
 		"ru"		"Серебро - I"
 		"ua"		"Срібло - I"
 		"chi"		"白银 ー I"
@@ -31,6 +32,7 @@
 	"rank_2"
 	{
 		"en"		"Silver II"
+		"pt-BR"		"Silver II"
 		"ru"		"Серебро - II"
 		"ua"		"Срібло - II"
 		"chi"		"白银 ー II"
@@ -40,6 +42,7 @@
 	"rank_3"
 	{
 		"en"		"Silver III"
+		"pt-BR"		"Silver III"
 		"ru"		"Серебро - III"
 		"ua"		"Срібло - III"
 		"chi"		"白银 ー III"
@@ -49,6 +52,7 @@
 	"rank_4"
 	{
 		"en"		"Silver IV"
+		"pt-BR"		"Silver IV"
 		"ru"		"Серебро - IV"
 		"ua"		"Срібло - IV"
 		"chi"		"白银 ー IV"
@@ -58,6 +62,7 @@
 	"rank_5"
 	{
 		"en"		"Silver Elite"
+		"pt-BR"		"Silver Elite"
 		"ru"		"Серебро Элита"
 		"ua"		"Срібло Еліта"
 		"chi"		"白银 ー 精英"
@@ -67,6 +72,7 @@
 	"rank_6"
 	{
 		"en"		"Silver Elite Master"
+		"pt-BR"		"Silver Elite Master"
 		"ru"		"Серебро - Великий Магистр"
 		"ua"		"Срібло - Великий Магістр"
 		"chi"		"白银 ー 大师级精英"
@@ -76,6 +82,7 @@
 	"rank_7"
 	{
 		"en"		"Gold Nova I"
+		"pt-BR"		"Gold Nova I"
 		"ru"		"Золотая Звезда - I"
 		"ua"		"Золота Зірка - I"
 		"chi"		"黄金新星 ー I"
@@ -85,6 +92,7 @@
 	"rank_8"
 	{
 		"en"		"Gold Nova II"
+		"pt-BR"		"Gold Nova II"
 		"ru"		"Золотая Звезда - II"
 		"ua"		"Золота Зірка - II"
 		"chi"		"黄金新星 ー II"
@@ -94,6 +102,7 @@
 	"rank_9"
 	{
 		"en"		"Gold Nova III"
+		"pt-BR"		"Gold Nova III"
 		"ru"		"Золотая Звезда - III"
 		"ua"		"Золота Зірка - III"
 		"chi"		"黄金新星 ー III"
@@ -103,6 +112,7 @@
 	"rank_10"
 	{
 		"en"		"Gold Nova Master"
+		"pt-BR"		"Gold Nova Master"
 		"ru"		"Золотая Звезда - Магистр"
 		"ua"		"Золота Зірка - Магістр"
 		"chi"		"黄金新星 ー 大师级"
@@ -112,6 +122,7 @@
 	"rank_11"
 	{
 		"en"		"Master Guardian I"
+		"pt-BR"		"Master Guardian I"
 		"ru"		"Магистр-хранитель - I"
 		"ua"		"Магістр-хранитель - I"
 		"chi"		"大师级守护者 ー I"
@@ -121,6 +132,7 @@
 	"rank_12"
 	{
 		"en"		"Master Guardian II"
+		"pt-BR"		"Master Guardian II"
 		"ru"		"Магистр-хранитель - II"
 		"ua"		"Магістр-хранитель - II"
 		"chi"		"大师级守护者 ー II"
@@ -130,6 +142,7 @@
 	"rank_13"
 	{
 		"en"		"Master Guardian Elite"
+		"pt-BR"		"Master Guardian Elite"
 		"ru"		"Магистр-хранитель - Элита"
 		"ua"		"Магістр-хранитель - Еліта"
 		"chi"		"大师级守护者 ー 精英"
@@ -139,6 +152,7 @@
 	"rank_14"
 	{
 		"en"		"Distinguished Master Guardian"
+		"pt-BR"		"Distinguished Master Guardian"
 		"ru"		"Заслуженный Магистр-хранитель"
 		"ua"		"Заслужений Магістр-хранитель"
 		"chi"		"大师级守护者 ー 卓越"
@@ -148,6 +162,7 @@
 	"rank_15"
 	{
 		"en"		"Legendary Eagle"
+		"pt-BR"		"Legendary Eagle"
 		"ru"		"Легендарный Беркут"
 		"ua"		"Легендарний Беркут"
 		"chi"		"传奇之鹰"
@@ -157,6 +172,7 @@
 	"rank_16"
 	{
 		"en"		"Legendary Eagle Master"
+		"pt-BR"		"Legendary Eagle Master"
 		"ru"		"Легендарный Беркут-магистр"
 		"ua"		"Легендарний Беркут-магістр"
 		"chi"		"传奇之鹰 ー 大师级"
@@ -166,6 +182,7 @@
 	"rank_17"
 	{
 		"en"		"Supreme Master First Class"
+		"pt-BR"		"Supreme Master First Class"
 		"ru"		"Великий Магистр - Высшего Ранга"
 		"ua"		"Великий Магістр - Вищого Рангу"
 		"chi"		"无上之首席大师"
@@ -175,6 +192,7 @@
 	"rank_18"
 	{
 		"en"		"The Global Elite"
+		"pt-BR"		"Global Elite"
 		"ru"		"Всемирная Элита"
 		"ua"		"Всесвітня Еліта"
 		"chi"		"全球精英"

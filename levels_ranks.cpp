@@ -907,7 +907,6 @@ void MyStats(int iSlot)
 		}
 	}
 
-
 	g_pMenus->SetExitMenu(hMenu, true);
 	g_pMenus->SetBackMenu(hMenu, true);
 	g_pMenus->SetCallback(hMenu, StatsMenuHandle);
@@ -1811,12 +1810,12 @@ void LR::AllPluginsLoaded()
 	g_pUtils->HookEvent(g_PLID, "weapon_fire", 	OnOtherEvents);
 	g_pUtils->HookEvent(g_PLID, "player_hurt", 	OnOtherEvents);
 
-	g_pUtils->RegCommand(g_PLID, {"mm_lvl", "sm_lvl"}, {"!lvl", "lvl", "!дмд", "дмд"}, [](int iSlot, const char* szContent){
+	g_pUtils->RegCommand(g_PLID, {"mm_lvl", "sm_lvl"}, {"!lvl", "/lvl", "lvl", "!дмд", "дмд"}, [](int iSlot, const char* szContent){
 		OnLRMenu(iSlot);
 		return false;
 	});
 
-	g_pUtils->RegCommand(g_PLID, {"mm_rank", "sm_rank"}, {"!rank", "rank", "!кфтл", "кфтл"}, [](int iSlot, const char* szContent){
+	g_pUtils->RegCommand(g_PLID, {"mm_rank", "sm_rank"}, {"!rank", "/rank", "rank", "!кфтл", "кфтл"}, [](int iSlot, const char* szContent){
 		int iKills = g_iPlayerInfo[iSlot].iStats[ST_KILLS],
 			iDeaths = g_iPlayerInfo[iSlot].iStats[ST_DEATHS];
 
@@ -1842,16 +1841,16 @@ void LR::AllPluginsLoaded()
 		return false;
 	});
 
-	g_pUtils->RegCommand(g_PLID, {"mm_session", "sm_session"}, {"!session", "session", "!ыуыышщт", "ыуыышщт"}, [](int iSlot, const char* szContent){
+	g_pUtils->RegCommand(g_PLID, {"mm_session", "sm_session"}, {"!session", "/session", "session", "!ыуыышщт", "ыуыышщт"}, [](int iSlot, const char* szContent){
 		return false;
 	});
 
-	g_pUtils->RegCommand(g_PLID, {"mm_toptime", "sm_toptime"}, {"!toptime", "toptime", "!ещзешьу", "ещзешьу"}, [](int iSlot, const char* szContent){
+	g_pUtils->RegCommand(g_PLID, {"mm_toptime", "sm_toptime"}, {"!toptime", "/toptime", "toptime", "!ещзешьу", "ещзешьу"}, [](int iSlot, const char* szContent){
 		OverAllTopPlayers(iSlot);
 		return false;
 	});
 
-	g_pUtils->RegCommand(g_PLID, {"mm_top", "sm_top"}, {"!top", "top", "!ещз", "ещз"}, [](int iSlot, const char* szContent){
+	g_pUtils->RegCommand(g_PLID, {"mm_top", "sm_top"}, {"!top", "/top", "top", "!ещз", "ещз"}, [](int iSlot, const char* szContent){
 		OverAllTopPlayers(iSlot, false);
 		return false;
 	});
