@@ -13,7 +13,7 @@
 #include <functional>
 #include "utils.hpp"
 #include <utlstring.h>
-#include <KeyValues.h>
+#include <keyvalues.h>
 #include "CCSPlayerController.h"
 #include "CGameRules.h"
 #include "module.h"
@@ -32,69 +32,21 @@
 #include <sstream>
 #include <vector>
 
-#define LR_FlagAdminmenu 0
-#define LR_MinplayersCount 1
-#define LR_ShowResetMyStats 2
-#define LR_ResetMyStatsCooldown 3
-#define LR_ShowUsualMessage 4
-#define LR_ShowSpawnMessage 5
-#define LR_ShowLevelUpMessage 6
-#define LR_ShowLevelDownMessage 7
-#define LR_ShowRankMessage 8
-#define LR_GiveExpRoundEnd 9
-#define LR_ShowRankList 10
-#define LR_BlockWarmup 11
-#define LR_AllAgainstAll 12
-#define LR_CleanDB_Days 13
-#define LR_CleanDB_BanClient 14
-#define LR_DB_SaveDataPlayer_Mode 15
-#define LR_DB_Allow_UTF8MB4 16
-#define LR_DB_Charset_Type 17
-#define LR_TopCount 18
-#define LR_StartPoints 19
-#define LR_TypeStatistics 20
+#define LR_SETTINGS_COUNT (LR_ShowLevelDownMessage + 1)
+#define LR_SETTINGS_STATS_COUNT (LR_ExpHostageRescued + 1)
+#define LR_STATS_COUNT (ST_PLACEINTOPTIME + 1)
 
-
-#define LR_ExpKill 0
-#define LR_ExpKillIsBot 1
-#define LR_ExpDeath 2
-#define LR_ExpDeathIsBot 3
-#define LR_ExpKillCoefficient 4
-#define LR_ExpGiveHeadShot 5
-#define LR_ExpGiveAssist 6
-#define LR_ExpGiveSuicide 7
-#define LR_ExpGiveTeamKill 8
-#define LR_ExpRoundWin 9
-#define LR_ExpRoundLose 10
-#define LR_ExpRoundMVP 11
-#define LR_ExpBombPlanted 12
-#define LR_ExpBombDefused 13
-#define LR_ExpBombDropped 14
-#define LR_ExpBombPickup 15
-#define LR_ExpHostageKilled 16
-#define LR_ExpHostageRescued 17
-
-#define ST_EXP 0
-#define ST_RANK 1
-#define ST_KILLS 2
-#define ST_DEATHS 3
-#define ST_SHOOTS 4
-#define ST_HITS 5
-#define ST_HEADSHOTS 6
-#define ST_ASSISTS 7
-#define ST_ROUNDSWIN 8
-#define ST_ROUNDSLOSE 9
-#define ST_PLAYTIME 10
-#define ST_PLACEINTOP 11
-#define ST_PLACEINTOPTIME 12
-
-class LR final : public ISmmPlugin, public IMetamodListener
+class LR final : public ISmmPlugin, public IMetamodListener, public IPlayerListener
 {
 public:
+	void ClientPutInServer(int iSlot) override;
+	void ClientDisconnect(int iSlot) override;
+
 	bool Load(PluginId id, ISmmAPI* ismm, char* error, size_t maxlen, bool late);
 	bool Unload(char* error, size_t maxlen);
 	void AllPluginsLoaded();
 	void* OnMetamodQuery(const char* iface, int* ret);
+	void OnPluginUnload(PluginId id);
 	void OnClientPutInServer(CPlayerSlot slot, char const *pszName, int type, uint64 xuid);
 private:
 	const char* GetAuthor();
@@ -158,6 +110,47 @@ public:
 	void RoundWithoutValue();
 	bool ChangeClientValue(int iSlot, int iGiveExp);
 	void ResetPlayerStats(int iSlot);
+
+	bool ResetClientStats(int iSlot, LR_CleanupType eType) override;
+	void ResetStatsBySteamID(const char* szSteamID, LR_CleanupType eType, OnResetCompleted fn) override;
+	void ResetDatabase(LR_CleanupType eType, OnResetCompleted fn) override;
+	void GetTopPlayers(LR_TopType eType, int iCount, OnTopPlayersReceived fn, int iOffset, bool bOnlyActive, int iMinKills) override;
+	void GetPlayerPlaceInTop(const char* szSteamID, LR_TopType eType, OnPlayerPlaceReceived fn, bool bOnlyActive, int iMinKills) override;
+	void GetPlayerStatsBySteamID(const char* szSteamID, OnPlayerStatsReceived fn) override;
+	const char* GetClientSteamID(int iSlot) override;
+	void SaveClientData(int iSlot) override;
+	void SaveAllClientsData() override;
+
+	void HookOnMenuOpen(SourceMM::PluginId id, OnMenuOpen fn) override {
+		OnMenuOpenHook[id].push_back(fn);
+	}
+	void OpenMenu(int iSlot, LR_MenuType eMenu, bool bCallHooks) override;
+	bool CanClientResetStats(int iSlot, int& iCooldownLeft) override;
+	bool ResetClientStatsWithCooldown(int iSlot) override;
+	bool IsClientAdmin(int iSlot) override;
+	const char* GetRankName(int iRank) override;
+	const char* GetTranslate(const char* szPhrase) override;
+	void RemoveHooks(SourceMM::PluginId id) override {
+		CoreReadyHook.erase(id);
+		OnLevelChangedPreHook.erase(id);
+		OnLevelChangedPostHook.erase(id);
+		OnPlayerKilledPreHook.erase(id);
+		OnPlayerKilledPostHook.erase(id);
+		OnPlayerLoadedHook.erase(id);
+		OnResetPlayerStatsHook.erase(id);
+		OnPlayerPosInTopHook.erase(id);
+		OnExpChangedPreHook.erase(id);
+		OnExpChangedPostHook.erase(id);
+		OnDatabaseCleanupHook.erase(id);
+		OnMenuOpenHook.erase(id);
+	}
+	bool SendOnMenuOpenHook(int iSlot, LR_MenuType eMenu) {
+		bool bBlock = false;
+		for(auto& item : OnMenuOpenHook)
+			for (auto& callback : item.second)
+				if (callback && callback(iSlot, eMenu)) bBlock = true;
+		return bBlock;
+	}
 
 	void SetActive(bool bStatus) {
 		bActive = bStatus;
@@ -295,18 +288,19 @@ private:
 	std::map<int, std::vector<OnExpChangedPre>> 	OnExpChangedPreHook;
 	std::map<int, std::vector<OnExpChangedPost>> 	OnExpChangedPostHook;
 	std::map<int, std::vector<OnDatabaseCleanup>> 	OnDatabaseCleanupHook;
+	std::map<int, std::vector<OnMenuOpen>> 			OnMenuOpenHook;
 };
 
 struct LR_PlayerInfo
 {
-	bool bHaveBomb;
-	bool bInitialized;
+	bool bHaveBomb = false;
+	bool bInitialized = false;
 
 	std::string szAuth;
-	int  iStats[13];
-	int  iSessionStats[13];
-	int  iRoundExp;
-	int  iKillStreak;
+	int  iStats[LR_STATS_COUNT] = {};
+	int  iSessionStats[LR_STATS_COUNT] = {};
+	int  iRoundExp = 0;
+	int  iKillStreak = 0;
 };
 
 #endif //_INCLUDE_METAMOD_SOURCE_STUB_PLUGIN_H_
