@@ -1730,7 +1730,6 @@ void LR::AllPluginsLoaded()
 		engine->ServerCommand(sBuffer.c_str());
 		return;
 	}
-	if (g_pPlayers) g_pPlayers->AddListener(g_PLID, this);
 
 
 	g_pMenus = (IMenusApi *)g_SMAPI->MetaFactory(Menus_INTERFACE, &ret, NULL);
@@ -1750,6 +1749,7 @@ void LR::AllPluginsLoaded()
 		engine->ServerCommand(sBuffer.c_str());
 		return;
 	}
+	g_pPlayers->AddListener(g_PLID, this);
 
 	g_pCookies = (ICookiesApi *)g_SMAPI->MetaFactory(COOKIES_INTERFACE, &ret, NULL);
 	if (ret == META_IFACE_FAILED)

@@ -32,6 +32,9 @@
 #include <sstream>
 #include <vector>
 
+// Индексы настроек/статистики берутся из enum'ов include/lvl_ranks.h.
+// Раньше тут были #define с ДРУГИМИ значениями (LR_ShowLevelUpMessage = 6 и т.п.):
+// настройки перетирали друг друга, а GetSettingsValue() из модулей читал за пределами массива.
 #define LR_SETTINGS_COUNT (LR_ShowLevelDownMessage + 1)
 #define LR_SETTINGS_STATS_COUNT (LR_ExpHostageRescued + 1)
 #define LR_STATS_COUNT (ST_PLACEINTOPTIME + 1)
@@ -144,6 +147,7 @@ public:
 		OnDatabaseCleanupHook.erase(id);
 		OnMenuOpenHook.erase(id);
 	}
+	// true - открытие отменено
 	bool SendOnMenuOpenHook(int iSlot, LR_MenuType eMenu) {
 		bool bBlock = false;
 		for(auto& item : OnMenuOpenHook)
